@@ -4,15 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
-
-export interface UserProfile {
-  id: string;
-  nome: string;
-  email: string;
-  role?: 'client' | 'admin';
-  telefone?: string;
-  endereco?: string;
-}
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { UserProfile } from '@/types/auth';
+import { login, signup, logout } from '@/services/authService';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -31,51 +25,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  // Fetch user profile data
-  const fetchUserProfile = async (userId: string, userEmail: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
-      }
-
-      // Get user role from auth.users metadata
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      
-      let role = 'client';
-      if (!userError && userData && userData.user && userData.user.user_metadata) {
-        role = userData.user.user_metadata.role || 'client';
-      }
-
-      return {
-        id: data.id,
-        nome: data.nome || '',
-        email: userEmail,
-        role: role as 'client' | 'admin',
-        telefone: data.telefone || '',
-        endereco: data.endereco || ''
-      };
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      return null;
-    }
-  };
+  const { fetchUserProfile, updateUserProfile } = useUserProfile();
 
   // Set up auth state listener
   useEffect(() => {
     const setupUser = async (session: Session | null) => {
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id, session.user.email || '');
-        
-        if (profile) {
-          setUser(profile);
+        try {
+          const profile = await fetchUserProfile(session.user.id, session.user.email || '');
+          
+          if (profile) {
+            setUser(profile);
+          }
+        } catch (error) {
+          console.error('Error setting up user:', error);
         }
       } else {
         setUser(null);
@@ -99,109 +62,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, fetchUserProfile]);
 
-  const login = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        throw error;
-      }
-      
-      toast.success('Login realizado com sucesso!');
+      await login(email, password);
       navigate('/menu');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      toast.error('Erro ao fazer login. Tente novamente.');
-      throw error;
-    }
-  };
-
-  const signup = async (
-    email: string, 
-    password: string, 
-    userData: Omit<UserProfile, 'id' | 'email'>
-  ) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            nome: userData.nome,
-            telefone: userData.telefone,
-            endereco: userData.endereco,
-            role: 'client' // Default role
-          }
-        }
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        throw error;
-      }
-      
-      toast.success('Cadastro realizado com sucesso!');
-      navigate('/menu');
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error('Erro ao fazer cadastro. Tente novamente.');
-      throw error;
-    }
-  };
-
-  const updateProfile = async (data: Partial<Omit<UserProfile, 'id' | 'email'>>) => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          nome: data.nome,
-          telefone: data.telefone,
-          endereco: data.endereco
-        })
-        .eq('id', user.id);
-      
-      if (error) {
-        toast.error('Erro ao atualizar perfil: ' + error.message);
-        throw error;
-      }
-      
-      // Update local user state
-      setUser(prev => prev ? {...prev, ...data} : null);
-      toast.success('Perfil atualizado com sucesso!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Erro ao atualizar perfil. Tente novamente.');
+      toast.error('Erro ao fazer login: ' + (error.message || 'Tente novamente'));
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = async () => {
+  const handleSignup = async (
+    email: string, 
+    password: string, 
+    userData: Omit<UserProfile, 'id' | 'email'>
+  ) => {
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      
-      setUser(null);
-      toast.info('Sessão encerrada');
+      await signup(email, password, userData);
+      navigate('/menu');
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      toast.error('Erro ao fazer cadastro: ' + (error.message || 'Tente novamente'));
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await logout();
       navigate('/login');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
-      toast.error('Erro ao encerrar sessão. Tente novamente.');
+      toast.error('Erro ao encerrar sessão: ' + (error.message || 'Tente novamente'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (data: Partial<Omit<UserProfile, 'id' | 'email'>>) => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      await updateUserProfile(user.id, data);
+      
+      // Update local user state
+      setUser(prev => prev ? {...prev, ...data} : null);
+      toast.success('Perfil atualizado com sucesso!');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast.error('Erro ao atualizar perfil: ' + (error.message || 'Tente novamente'));
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,9 +133,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
-      login,
-      signup,
-      logout,
+      login: handleLogin,
+      signup: handleSignup,
+      logout: handleLogout,
       loading,
       updateProfile
     }}>

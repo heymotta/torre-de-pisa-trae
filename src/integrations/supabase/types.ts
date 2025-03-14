@@ -74,29 +74,35 @@ export type Database = {
       }
       pizzas: {
         Row: {
+          categoria: string | null
           criado_em: string
           descricao: string | null
           disponivel: boolean
           id: string
           imagem_url: string | null
+          ingredientes: string[] | null
           nome: string
           preco: number
         }
         Insert: {
+          categoria?: string | null
           criado_em?: string
           descricao?: string | null
           disponivel?: boolean
           id?: string
           imagem_url?: string | null
+          ingredientes?: string[] | null
           nome: string
           preco: number
         }
         Update: {
+          categoria?: string | null
           criado_em?: string
           descricao?: string | null
           disponivel?: boolean
           id?: string
           imagem_url?: string | null
+          ingredientes?: string[] | null
           nome?: string
           preco?: number
         }

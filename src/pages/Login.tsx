@@ -30,7 +30,7 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState<string>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const from = (location.state as any)?.from || '/';
+  const from = (location.state as any)?.from || '/menu';
   
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -39,14 +39,17 @@ const Login = () => {
   
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
     
     try {
       await login(email, password);
-      // Reset state only if there's an error (successful login will redirect)
+      // We don't reset state here since successful login will redirect
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Erro ao fazer login. Verifique suas credenciais.');
+      // Don't show toast here as it's handled in the auth service
     } finally {
       setIsSubmitting(false);
     }
@@ -55,8 +58,20 @@ const Login = () => {
   const handleSignupSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
+    if (isSubmitting) return;
+    
+    if (!nome.trim()) {
+      toast.error('O nome é obrigatório');
+      return;
+    }
+    
     if (signupPassword !== signupPasswordConfirm) {
       toast.error('As senhas não coincidem');
+      return;
+    }
+    
+    if (signupPassword.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
       return;
     }
     
@@ -68,9 +83,10 @@ const Login = () => {
         endereco,
         role: 'client'
       });
+      // We don't reset state here since successful signup will redirect
     } catch (error) {
       console.error('Signup error:', error);
-      toast.error('Erro ao fazer cadastro. Tente novamente.');
+      // Don't show toast here as it's handled in the auth service
     } finally {
       setIsSubmitting(false);
     }
@@ -121,6 +137,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -145,12 +162,14 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-motta-500 hover:text-motta-700"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                        disabled={isSubmitting}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -162,10 +181,10 @@ const Login = () => {
                       type="submit" 
                       fullWidth 
                       size="lg"
-                      isLoading={isSubmitting}
-                      disabled={isSubmitting}
+                      isLoading={isSubmitting || loading}
+                      disabled={isSubmitting || loading}
                     >
-                      Entrar
+                      {isSubmitting || loading ? "Entrando..." : "Entrar"}
                     </PrimaryButton>
                   </div>
                 </form>
@@ -175,6 +194,7 @@ const Login = () => {
                   <button 
                     onClick={() => setActiveTab('signup')} 
                     className="text-motta-primary font-medium hover:underline"
+                    disabled={isSubmitting || loading}
                   >
                     Criar conta
                   </button>
@@ -201,6 +221,7 @@ const Login = () => {
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -215,6 +236,7 @@ const Login = () => {
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -229,6 +251,7 @@ const Login = () => {
                         placeholder="(99) 99999-9999"
                         value={telefone}
                         onChange={(e) => setTelefone(e.target.value)}
+                        disabled={isSubmitting}
                       />
                     </div>
                     
@@ -242,6 +265,7 @@ const Login = () => {
                         placeholder="Seu endereço"
                         value={endereco}
                         onChange={(e) => setEndereco(e.target.value)}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -259,12 +283,14 @@ const Login = () => {
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
                         minLength={6}
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-motta-500 hover:text-motta-700"
                         onClick={() => setShowSignupPassword(!showSignupPassword)}
                         aria-label={showSignupPassword ? "Esconder senha" : "Mostrar senha"}
+                        disabled={isSubmitting}
                       >
                         {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -283,6 +309,7 @@ const Login = () => {
                       onChange={(e) => setSignupPasswordConfirm(e.target.value)}
                       required
                       minLength={6}
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -291,10 +318,10 @@ const Login = () => {
                       type="submit" 
                       fullWidth 
                       size="lg"
-                      isLoading={isSubmitting}
-                      disabled={isSubmitting}
+                      isLoading={isSubmitting || loading}
+                      disabled={isSubmitting || loading}
                     >
-                      Criar conta
+                      {isSubmitting || loading ? "Criando conta..." : "Criar conta"}
                     </PrimaryButton>
                   </div>
                 </form>
@@ -304,6 +331,7 @@ const Login = () => {
                   <button 
                     onClick={() => setActiveTab('login')} 
                     className="text-motta-primary font-medium hover:underline"
+                    disabled={isSubmitting || loading}
                   >
                     Entrar
                   </button>

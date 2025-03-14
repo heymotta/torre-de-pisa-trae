@@ -6,6 +6,7 @@ import PizzaCard, { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { toast } from 'sonner';
 
 const fetchPizzas = async () => {
   const { data, error } = await supabase
@@ -14,7 +15,12 @@ const fetchPizzas = async () => {
     .eq('disponivel', true);
     
   if (error) {
+    console.error('Error fetching pizzas:', error);
     throw new Error(error.message);
+  }
+  
+  if (!data || data.length === 0) {
+    return [];
   }
   
   // Map database fields to PizzaItem interface
@@ -23,21 +29,33 @@ const fetchPizzas = async () => {
     name: pizza.nome,
     description: pizza.descricao || '',
     price: pizza.preco,
-    image: pizza.imagem_url || '',
-    category: 'tradicional', // Default category since it doesn't exist in the database
-    ingredients: [] // Default empty array since it doesn't exist in the database
+    image: pizza.imagem_url || '/placeholder.svg', // Use placeholder if no image
+    category: pizza.categoria || 'tradicional',
+    ingredients: pizza.ingredientes || []
   })) as PizzaItem[];
 };
 
 const Menu = () => {
-  const { data: pizzas, isLoading, error } = useQuery({
+  const { data: pizzas, isLoading, error, refetch } = useQuery({
     queryKey: ['pizzas'],
-    queryFn: fetchPizzas
+    queryFn: fetchPizzas,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
+  
+  // Retry data fetching one time if it fails
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        refetch();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, refetch]);
   
   useEffect(() => {
     if (pizzas) {
@@ -64,7 +82,17 @@ const Menu = () => {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <p>Carregando o menu...</p>
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
+            <div className="h-10 bg-gray-200 rounded w-full"></div>
+            <div className="h-10 bg-gray-200 rounded w-full"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div key={item} className="h-64 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+          <p className="mt-4">Carregando o menu...</p>
         </div>
       </div>
     );
@@ -75,12 +103,28 @@ const Menu = () => {
       <div className="container mx-auto py-8">
         <div className="text-center text-red-500">
           <p>Erro ao carregar o menu. Por favor, tente novamente.</p>
+          <button 
+            onClick={() => refetch()} 
+            className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
+          >
+            Tentar novamente
+          </button>
         </div>
       </div>
     );
   }
   
-  const categories = ['all', ...new Set(pizzas?.map(pizza => pizza.category))];
+  if (!pizzas || pizzas.length === 0) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p>Nenhuma pizza disponível no momento.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  const categories = ['all', ...new Set(pizzas.map(pizza => pizza.category))];
 
   return (
     <div className="container mx-auto py-8">
