@@ -1,14 +1,16 @@
 
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const isMobile = useIsMobile();
 
   return (
     <footer className="bg-motta-950 text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <span className="font-display font-bold text-2xl">
@@ -74,8 +76,8 @@ const Footer = () => {
                 <MapPin size={20} className="mr-2 text-motta-400 flex-shrink-0 mt-1" />
                 <span className="text-motta-400">Av. São Sebastião, 140 - Jardim Ana Maria, Piraju - SP, 18803-130</span>
               </li>
-              <li className="flex items-center">
-                <Phone size={20} className="mr-2 text-motta-400" />
+              <li className="flex items-start">
+                <Phone size={20} className="mr-2 text-motta-400 flex-shrink-0 mt-1" />
                 <div className="flex flex-col">
                   <a href="tel:+551433513504" className="text-motta-400 hover:text-white transition-colors">(14) 3351-3504</a>
                   <a href="tel:+551433512684" className="text-motta-400 hover:text-white transition-colors">(14) 3351-2684</a>
@@ -90,7 +92,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-motta-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-motta-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-motta-400 text-sm">
             &copy; {currentYear} Torre de Pisa. Todos os direitos reservados.
           </p>
