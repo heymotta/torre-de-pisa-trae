@@ -1,5 +1,5 @@
 
-import { ReactNode, ButtonHTMLAttributes } from 'react';
+import { ReactNode, ButtonHTMLAttributes, forwardRef, ElementType } from 'react';
 import { cn } from '@/lib/utils';
 
 interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -8,17 +8,21 @@ interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   isLoading?: boolean;
+  as?: ElementType;
+  to?: string; // for React Router Link
 }
 
-const PrimaryButton = ({ 
+const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(({ 
   children, 
   className, 
   variant = 'default', 
   size = 'md', 
   fullWidth = false,
   isLoading = false,
+  as: Component = 'button',
+  to,
   ...props 
-}: PrimaryButtonProps) => {
+}, ref) => {
   const baseStyles = "rounded-full font-medium transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-motta-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center";
   
   const variantStyles = {
@@ -35,8 +39,11 @@ const PrimaryButton = ({
 
   const widthClass = fullWidth ? 'w-full' : '';
 
+  // If it's a link component, include the "to" prop
+  const componentProps = Component !== 'button' && to ? { to, ...props } : props;
+
   return (
-    <button
+    <Component
       className={cn(
         baseStyles,
         variantStyles[variant],
@@ -45,7 +52,8 @@ const PrimaryButton = ({
         className
       )}
       disabled={isLoading || props.disabled}
-      {...props}
+      ref={ref}
+      {...componentProps}
     >
       {isLoading ? (
         <>
@@ -74,8 +82,10 @@ const PrimaryButton = ({
       ) : (
         children
       )}
-    </button>
+    </Component>
   );
-};
+});
+
+PrimaryButton.displayName = 'PrimaryButton';
 
 export default PrimaryButton;
