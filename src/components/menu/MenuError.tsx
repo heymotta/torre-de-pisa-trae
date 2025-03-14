@@ -1,23 +1,37 @@
 
 import { ReactNode } from 'react';
+import { AlertCircle, RefreshCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MenuErrorProps {
   children?: ReactNode;
 }
 
 const MenuError = ({ children }: MenuErrorProps) => {
+  const queryClient = useQueryClient();
+  
+  const handleRetry = () => {
+    console.log('Tentando carregar o cardápio novamente...');
+    queryClient.invalidateQueries({ queryKey: ['pizzas'] });
+  };
+  
   return (
     <div className="container mx-auto py-8 pt-24">
-      <div className="text-center text-red-500">
-        <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
-        <p>Erro ao carregar o menu. Por favor, tente novamente.</p>
+      <div className="text-center">
+        <div className="flex justify-center mb-4">
+          <AlertCircle className="h-12 w-12 text-red-500" />
+        </div>
+        <h1 className="text-3xl font-bold mb-4">Nosso Cardápio</h1>
+        <p className="text-red-500 font-medium mb-2">Erro ao carregar o menu. Por favor, tente novamente.</p>
         {children}
-        <button 
-          className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
-          onClick={() => window.location.reload()}
+        <Button 
+          onClick={handleRetry}
+          className="mt-6 flex items-center gap-2"
         >
+          <RefreshCcw className="h-4 w-4" />
           Tentar novamente
-        </button>
+        </Button>
       </div>
     </div>
   );

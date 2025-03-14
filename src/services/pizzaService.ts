@@ -4,6 +4,7 @@ import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 
 export const fetchPizzas = async (): Promise<PizzaItem[]> => {
   try {
+    console.log('Fetching pizzas from Supabase...');
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
@@ -13,6 +14,13 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       console.error('Error fetching pizzas:', error);
       throw new Error(error.message);
     }
+    
+    if (!data || data.length === 0) {
+      console.log('No pizzas found or empty data returned');
+      return [];
+    }
+    
+    console.log('Pizzas fetched successfully:', data);
     
     // Map database fields to PizzaItem interface
     return data.map(pizza => ({

@@ -12,10 +12,14 @@ import MenuError from '@/components/menu/MenuError';
 import EmptyMenuState from '@/components/menu/EmptyMenuState';
 
 const Menu = () => {
-  const { data: pizzas, isLoading, error } = useQuery({
+  console.log('Rendering Menu component');
+  
+  const { data: pizzas, isLoading, error, refetch } = useQuery({
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1000 * 60, // 1 minute
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +27,8 @@ const Menu = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   
   useEffect(() => {
+    console.log('Menu component - pizzas data:', pizzas);
+    
     if (pizzas) {
       let filtered = [...pizzas];
       
@@ -39,13 +45,16 @@ const Menu = () => {
         filtered = filtered.filter(pizza => pizza.category === activeCategory);
       }
       
+      console.log('Menu component - filtered pizzas:', filtered);
       setFilteredPizzas(filtered);
     } else {
+      console.log('Menu component - no pizza data available, setting empty array');
       setFilteredPizzas([]);
     }
   }, [pizzas, searchQuery, activeCategory]);
   
   if (isLoading) {
+    console.log('Menu component - loading state');
     return (
       <>
         <Header />
@@ -55,15 +64,25 @@ const Menu = () => {
   }
   
   if (error) {
+    console.error('Menu component - error state:', error);
     return (
       <>
         <Header />
-        <MenuError />
+        <MenuError>
+          <p className="text-sm mt-2">Erro: {(error as Error).message}</p>
+          <button 
+            className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
+            onClick={() => refetch()}
+          >
+            Tentar novamente
+          </button>
+        </MenuError>
       </>
     );
   }
   
   if (!pizzas || pizzas.length === 0) {
+    console.log('Menu component - empty state');
     return (
       <>
         <Header />
@@ -74,6 +93,12 @@ const Menu = () => {
   
   // Extract unique categories from the pizzas
   const categories = ['all', ...new Set(pizzas.map(pizza => pizza.category))];
+  
+  console.log('Menu component - rendering with data', { 
+    totalPizzas: pizzas.length,
+    filteredCount: filteredPizzas.length,
+    categories
+  });
 
   return (
     <>
