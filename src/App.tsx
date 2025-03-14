@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminOrders from "./pages/admin/Orders";
 import AdminMenu from "./pages/admin/Menu";
 import About from "./pages/About";
+import Menu from "./pages/Menu";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />
+              <Route path="/menu" element={<Menu />} />
               
               {/* Protected Customer Routes */}
               <Route path="/profile" element={

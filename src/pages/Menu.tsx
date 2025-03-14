@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { fetchPizzas } from '@/services/pizzaService';
 import MenuSearch from '@/components/menu/MenuSearch';
 import CategoryTabs from '@/components/menu/CategoryTabs';
@@ -10,7 +11,7 @@ import PizzaGrid from '@/components/menu/PizzaGrid';
 import MenuSkeleton from '@/components/menu/MenuSkeleton';
 import MenuError from '@/components/menu/MenuError';
 import EmptyMenuState from '@/components/menu/EmptyMenuState';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 const Menu = () => {
   console.log('Rendering Menu component');
@@ -57,9 +58,8 @@ const Menu = () => {
   useEffect(() => {
     // On component mount, show a loading toast
     if (isLoading) {
-      toast({
-        title: "Carregando pizzas",
-        description: "Aguarde enquanto buscamos o cardápio.",
+      toast('Carregando cardápio', {
+        description: 'Aguarde enquanto buscamos as pizzas disponíveis.'
       });
     }
   }, []);
@@ -70,6 +70,7 @@ const Menu = () => {
       <>
         <Header />
         <MenuSkeleton />
+        <Footer />
       </>
     );
   }
@@ -82,6 +83,7 @@ const Menu = () => {
         <MenuError>
           <p className="text-sm mt-2">Erro: {(error as Error).message}</p>
         </MenuError>
+        <Footer />
       </>
     );
   }
@@ -92,6 +94,7 @@ const Menu = () => {
       <>
         <Header />
         <EmptyMenuState />
+        <Footer />
       </>
     );
   }
@@ -124,6 +127,7 @@ const Menu = () => {
         
         <PizzaGrid pizzas={filteredPizzas} />
       </div>
+      <Footer />
     </>
   );
 };
