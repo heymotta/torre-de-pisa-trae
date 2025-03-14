@@ -22,6 +22,10 @@ export const login = async (email: string, password: string) => {
     // Provide more user-friendly error messages
     if (error.message.includes('Invalid login credentials')) {
       throw new Error('Email ou senha inválidos');
+    } else if (error.message.includes('Too many requests')) {
+      throw new Error('Muitas tentativas. Tente novamente mais tarde');
+    } else if (error.message.includes('timeout')) {
+      throw new Error('Tempo esgotado. Verifique sua conexão');
     } else {
       throw error;
     }
@@ -61,6 +65,10 @@ export const signup = async (
       throw new Error('Este email já está cadastrado');
     } else if (error.message.includes('password')) {
       throw new Error('A senha deve ter pelo menos 6 caracteres');
+    } else if (error.message.includes('timeout')) {
+      throw new Error('Tempo esgotado. Verifique sua conexão');
+    } else if (error.message.includes('Too many requests')) {
+      throw new Error('Muitas tentativas. Tente novamente mais tarde');
     } else {
       throw error;
     }

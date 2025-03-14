@@ -49,7 +49,8 @@ const Menu = () => {
   const { data: pizzas, isLoading, error, refetch } = useQuery({
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
-    retry: 3,
+    retry: 5, // Increase retry attempts
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
@@ -89,6 +90,7 @@ const Menu = () => {
       setFilteredPizzas(filtered);
     } else {
       console.log('Pizzas data is null or undefined');
+      setFilteredPizzas([]);
     }
   }, [pizzas, searchQuery, activeCategory]);
   

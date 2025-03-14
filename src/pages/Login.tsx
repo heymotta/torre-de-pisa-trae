@@ -1,6 +1,6 @@
 
-import { useState, FormEvent } from 'react';
-import { Link, useLocation, Navigate } from 'react-router-dom';
+import { useState, FormEvent, useEffect } from 'react';
+import { Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -27,15 +27,35 @@ const Login = () => {
   
   const { login, signup, isAuthenticated, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const from = (location.state as any)?.from || '/menu';
   
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
-  }
+  // Redirect if already authenticated - use an effect to ensure this runs client-side
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
+  
+  // Reset submission state after 15 seconds (in case of hanging requests)
+  useEffect(() => {
+    if (isSubmitting) {
+      const timer = setTimeout(() => {
+        setIsSubmitting(false);
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitting]);
+  
+  // Clear any stale loading states
+  useEffect(() => {
+    return () => {
+      setIsSubmitting(false);
+    };
+  }, []);
   
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,7 +66,7 @@ const Login = () => {
     
     try {
       await login(email, password);
-      // We don't reset state here since successful login will redirect
+      // Navigation is handled by the authentication state change
     } catch (error) {
       console.error('Login error:', error);
       // Don't show toast here as it's handled in the auth service
@@ -83,7 +103,7 @@ const Login = () => {
         endereco,
         role: 'client'
       });
-      // We don't reset state here since successful signup will redirect
+      // Navigation is handled by the authentication state change
     } catch (error) {
       console.error('Signup error:', error);
       // Don't show toast here as it's handled in the auth service
@@ -91,6 +111,15 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // If already authenticated, show a temporary message and redirect
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p>Você já está autenticado, redirecionando...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
