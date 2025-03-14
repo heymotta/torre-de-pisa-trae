@@ -21,19 +21,16 @@ const Menu = () => {
     queryFn: fetchPizzas,
     staleTime: 1000 * 60, // 1 minute
     retry: 2,
-    // Add timeout to prevent infinite loading
-    gcTime: 5 * 60 * 1000, // 5 minutes
   });
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   
-  // Make sure to handle the case when pizzas might be undefined
   useEffect(() => {
     console.log('Menu component - pizzas data:', pizzas);
     
-    if (pizzas) {
+    if (pizzas && pizzas.length > 0) {
       let filtered = [...pizzas];
       
       // Apply search filter
@@ -57,16 +54,14 @@ const Menu = () => {
     }
   }, [pizzas, searchQuery, activeCategory]);
   
-  // Show a loading toast only once when component mounts
   useEffect(() => {
+    // On component mount, show a loading toast
     if (isLoading) {
       toast('Carregando cardápio', {
         description: 'Aguarde enquanto buscamos as pizzas disponíveis.'
       });
     }
-  }, []);
-
-  console.log('Menu render state:', { isLoading, hasError: !!error, pizzasLength: pizzas?.length });
+  }, [isLoading]);
   
   if (isLoading) {
     console.log('Menu component - loading state');
@@ -92,7 +87,6 @@ const Menu = () => {
     );
   }
   
-  // Check if pizzas array is undefined or empty
   if (!pizzas || pizzas.length === 0) {
     console.log('Menu component - empty state');
     return (
