@@ -20,8 +20,7 @@ const Menu = () => {
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
     staleTime: 1000 * 60, // 1 minute
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
+    retry: 2,
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +30,7 @@ const Menu = () => {
   useEffect(() => {
     console.log('Menu component - pizzas data:', pizzas);
     
-    if (pizzas) {
+    if (pizzas && pizzas.length > 0) {
       let filtered = [...pizzas];
       
       // Apply search filter
@@ -62,7 +61,7 @@ const Menu = () => {
         description: 'Aguarde enquanto buscamos as pizzas disponíveis.'
       });
     }
-  }, []);
+  }, [isLoading]);
   
   if (isLoading) {
     console.log('Menu component - loading state');

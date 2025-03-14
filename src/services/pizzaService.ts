@@ -15,12 +15,12 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       throw new Error(error.message);
     }
     
-    if (!data || data.length === 0) {
-      console.log('No pizzas found or empty data returned');
+    if (!data) {
+      console.log('No data returned from Supabase');
       return [];
     }
     
-    console.log('Pizzas fetched successfully:', data);
+    console.log('Raw pizza data from Supabase:', data);
     
     // Map database fields to PizzaItem interface
     const mappedPizzas = data.map(pizza => ({
