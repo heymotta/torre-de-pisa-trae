@@ -90,3 +90,19 @@ export const logout = async () => {
     throw error;
   }
 };
+
+export const checkIsAdmin = async (): Promise<boolean> => {
+  try {
+    const { data } = await supabase.auth.getUser();
+    
+    if (!data || !data.user) {
+      return false;
+    }
+    
+    const userRole = data.user.user_metadata?.role;
+    return userRole === 'admin';
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+};

@@ -99,3 +99,77 @@ export const getOrderStatus = (status: string): {
     index: -1
   };
 };
+
+export const updateOrderStatus = async (orderId: string, newStatus: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('pedidos')
+      .update({ status: newStatus })
+      .eq('id', orderId);
+      
+    if (error) {
+      console.error('Error updating order status:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to update order status:', error);
+    throw error;
+  }
+};
+
+export const fetchAllOrders = async (): Promise<Order[]> => {
+  try {
+    console.log('Fetching all orders (admin only)');
+    
+    // 1. Fetch all orders
+    const { data: ordersData, error: ordersError } = await supabase
+      .from('pedidos')
+      .select('*')
+      .order('criado_em', { ascending: false });
+
+    if (ordersError) {
+      console.error('Error fetching all orders:', ordersError);
+      throw ordersError;
+    }
+    
+    if (!ordersData || ordersData.length === 0) {
+      console.log('No orders found');
+      return [];
+    }
+    
+    // 2. For each order, fetch the order items with their pizza details
+    const ordersWithItems = await Promise.all(
+      ordersData.map(async (order) => {
+        const { data: itemsData, error: itemsError } = await supabase
+          .from('pedido_itens')
+          .select(`
+            *,
+            pizza:pizza_id (
+              nome,
+              preco,
+              imagem_url
+            )
+          `)
+          .eq('pedido_id', order.id);
+
+        if (itemsError) {
+          console.error('Error fetching order items:', itemsError);
+          throw itemsError;
+        }
+        
+        return {
+          ...order,
+          itens: itemsData || []
+        };
+      })
+    );
+    
+    console.log('All orders with items:', ordersWithItems);
+    return ordersWithItems;
+  } catch (error) {
+    console.error('Failed to fetch all orders:', error);
+    throw error;
+  }
+};

@@ -6,7 +6,6 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
   try {
     console.log('Fetching pizzas from Supabase...');
     
-    // Simplify the query to make sure we're getting results
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
@@ -24,7 +23,6 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     
     console.log('Raw pizza data from Supabase:', data);
     
-    // Improve mapping to handle potential missing fields
     const mappedPizzas = data.map(pizza => ({
       id: pizza.id,
       name: pizza.nome || 'Pizza sem nome',
@@ -35,12 +33,91 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       ingredients: pizza.ingredientes || []
     }));
     
-    console.log('Mapped pizzas:', mappedPizzas);
     console.log('Number of pizzas fetched:', mappedPizzas.length);
     return mappedPizzas;
   } catch (error) {
     console.error('Failed to fetch pizzas:', error);
-    // Return empty array instead of throwing to prevent loading state from hanging
     return [];
+  }
+};
+
+export const updatePizza = async (id: string, data: Partial<Omit<PizzaItem, 'id'>>): Promise<boolean> => {
+  try {
+    // Map the frontend data model to the database model
+    const pizzaData = {
+      nome: data.name,
+      descricao: data.description,
+      preco: data.price,
+      imagem_url: data.image,
+      categoria: data.category,
+      ingredientes: data.ingredients,
+      disponivel: true
+    };
+    
+    const { error } = await supabase
+      .from('pizzas')
+      .update(pizzaData)
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error updating pizza:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to update pizza:', error);
+    throw error;
+  }
+};
+
+export const createPizza = async (data: Omit<PizzaItem, 'id'>): Promise<string> => {
+  try {
+    // Map the frontend data model to the database model
+    const pizzaData = {
+      nome: data.name,
+      descricao: data.description,
+      preco: data.price,
+      imagem_url: data.image,
+      categoria: data.category,
+      ingredientes: data.ingredients,
+      disponivel: true
+    };
+    
+    const { data: result, error } = await supabase
+      .from('pizzas')
+      .insert(pizzaData)
+      .select('id')
+      .single();
+      
+    if (error) {
+      console.error('Error creating pizza:', error);
+      throw error;
+    }
+    
+    return result.id;
+  } catch (error) {
+    console.error('Failed to create pizza:', error);
+    throw error;
+  }
+};
+
+export const deletePizza = async (id: string): Promise<boolean> => {
+  try {
+    // Instead of actually deleting, we just mark it as unavailable
+    const { error } = await supabase
+      .from('pizzas')
+      .update({ disponivel: false })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting pizza:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to delete pizza:', error);
+    throw error;
   }
 };
