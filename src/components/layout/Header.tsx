@@ -44,7 +44,7 @@ const Header = () => {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        isScrolled || isMobileMenuOpen ? 'bg-white/80 backdrop-blur-md shadow-sm' : 'bg-transparent'
+        isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white/90 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,13 +80,13 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Button
               size="sm"
-              variant="ghost"
-              className="relative"
+              variant="outline"
+              className="relative border-motta-300 bg-white hover:bg-motta-50"
               aria-label="Shopping Cart"
               asChild
             >
               <Link to="/cart">
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 text-motta-700" />
                 {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 bg-motta-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {totalItems}
@@ -97,12 +97,12 @@ const Header = () => {
 
             <Button
               size="sm"
-              variant={user ? "ghost" : "default"}
-              className={user ? "" : "bg-motta-primary hover:bg-motta-primary/90"}
+              variant={user ? "outline" : "default"}
+              className={user ? "border-motta-300 bg-white hover:bg-motta-50" : "bg-motta-primary hover:bg-motta-primary/90"}
               onClick={user ? handleProfileClick : () => navigate('/login')}
             >
               {user ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 text-motta-700">
                   <User className="h-5 w-5" />
                   <span className="font-medium">{user.name?.split(' ')[0]}</span>
                 </div>
@@ -116,13 +116,13 @@ const Header = () => {
           <div className="flex md:hidden items-center space-x-3">
             <Button
               size="icon"
-              variant="ghost"
-              className="relative"
+              variant="outline"
+              className="relative border-motta-300 bg-white"
               aria-label="Shopping Cart"
               asChild
             >
               <Link to="/cart">
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 text-motta-700" />
                 {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 bg-motta-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {totalItems}
@@ -133,11 +133,12 @@ const Header = () => {
 
             <Button
               size="icon"
-              variant="ghost"
+              variant="outline"
+              className="border-motta-300 bg-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Menu"
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMobileMenuOpen ? <X className="h-5 w-5 text-motta-700" /> : <Menu className="h-5 w-5 text-motta-700" />}
             </Button>
           </div>
         </div>
@@ -149,7 +150,7 @@ const Header = () => {
           isMobileMenuOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-4 pt-2 pb-4 space-y-1 bg-white/80 backdrop-blur-md">
+        <div className="px-4 pt-2 pb-4 space-y-1 bg-white shadow-md">
           {navLinks.map((link) => (
             <Link
               key={link.path}

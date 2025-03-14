@@ -300,7 +300,7 @@ const AdminMenu = () => {
           setIsFormOpen(false);
         }
       }}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editingPizza ? 'Editar Pizza' : 'Adicionar Nova Pizza'}</DialogTitle>
             <DialogDescription>
