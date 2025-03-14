@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import PrimaryButton from '@/components/ui/custom/PrimaryButton';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from 'sonner';
 
 const Login = () => {
   // Login state
@@ -27,6 +28,7 @@ const Login = () => {
   const { login, signup, isAuthenticated, loading } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const from = (location.state as any)?.from || '/';
   
@@ -37,22 +39,41 @@ const Login = () => {
   
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await login(email, password);
+    setIsSubmitting(true);
+    
+    try {
+      await login(email, password);
+      // Reset state only if there's an error (successful login will redirect)
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const handleSignupSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     if (signupPassword !== signupPasswordConfirm) {
-      return alert('As senhas não coincidem');
+      toast.error('As senhas não coincidem');
+      return;
     }
     
-    await signup(signupEmail, signupPassword, {
-      nome,
-      telefone,
-      endereco,
-      role: 'client'
-    });
+    setIsSubmitting(true);
+    try {
+      await signup(signupEmail, signupPassword, {
+        nome,
+        telefone,
+        endereco,
+        role: 'client'
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error('Erro ao fazer cadastro. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -141,8 +162,8 @@ const Login = () => {
                       type="submit" 
                       fullWidth 
                       size="lg"
-                      isLoading={loading}
-                      disabled={loading}
+                      isLoading={isSubmitting}
+                      disabled={isSubmitting}
                     >
                       Entrar
                     </PrimaryButton>
@@ -270,8 +291,8 @@ const Login = () => {
                       type="submit" 
                       fullWidth 
                       size="lg"
-                      isLoading={loading}
-                      disabled={loading}
+                      isLoading={isSubmitting}
+                      disabled={isSubmitting}
                     >
                       Criar conta
                     </PrimaryButton>

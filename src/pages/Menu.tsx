@@ -24,8 +24,8 @@ const fetchPizzas = async () => {
     description: pizza.descricao || '',
     price: pizza.preco,
     image: pizza.imagem_url || '',
-    category: pizza.categoria || 'tradicional', // Assuming default category if not available
-    ingredients: pizza.ingredientes || []
+    category: 'tradicional', // Default category since it doesn't exist in the database
+    ingredients: [] // Default empty array since it doesn't exist in the database
   })) as PizzaItem[];
 };
 

@@ -93,13 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, session) => {
         console.log('Auth state changed:', event);
         await setupUser(session);
-
-        // Redirect based on auth event
-        if (event === 'SIGNED_IN' && session) {
-          navigate('/menu');
-        } else if (event === 'SIGNED_OUT') {
-          navigate('/login');
-        }
       }
     );
 
@@ -109,8 +102,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -119,15 +110,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         toast.error(error.message);
-        setLoading(false);
-        return;
+        throw error;
       }
       
       toast.success('Login realizado com sucesso!');
+      navigate('/menu');
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Erro ao fazer login. Tente novamente.');
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -136,8 +127,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string, 
     userData: Omit<UserProfile, 'id' | 'email'>
   ) => {
-    setLoading(true);
-    
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -154,15 +143,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         toast.error(error.message);
-        setLoading(false);
-        return;
+        throw error;
       }
       
       toast.success('Cadastro realizado com sucesso!');
+      navigate('/menu');
     } catch (error) {
       console.error('Signup error:', error);
       toast.error('Erro ao fazer cadastro. Tente novamente.');
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -183,7 +172,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         toast.error('Erro ao atualizar perfil: ' + error.message);
-        return;
+        throw error;
       }
       
       // Update local user state
@@ -192,6 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Erro ao atualizar perfil. Tente novamente.');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -208,6 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       setUser(null);
       toast.info('Sessão encerrada');
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Erro ao encerrar sessão. Tente novamente.');
