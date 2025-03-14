@@ -10,6 +10,7 @@ import PizzaGrid from '@/components/menu/PizzaGrid';
 import MenuSkeleton from '@/components/menu/MenuSkeleton';
 import MenuError from '@/components/menu/MenuError';
 import EmptyMenuState from '@/components/menu/EmptyMenuState';
+import { toast } from '@/components/ui/use-toast';
 
 const Menu = () => {
   console.log('Rendering Menu component');
@@ -53,6 +54,16 @@ const Menu = () => {
     }
   }, [pizzas, searchQuery, activeCategory]);
   
+  useEffect(() => {
+    // On component mount, show a loading toast
+    if (isLoading) {
+      toast({
+        title: "Carregando pizzas",
+        description: "Aguarde enquanto buscamos o cardápio.",
+      });
+    }
+  }, []);
+  
   if (isLoading) {
     console.log('Menu component - loading state');
     return (
@@ -70,12 +81,6 @@ const Menu = () => {
         <Header />
         <MenuError>
           <p className="text-sm mt-2">Erro: {(error as Error).message}</p>
-          <button 
-            className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
-            onClick={() => refetch()}
-          >
-            Tentar novamente
-          </button>
         </MenuError>
       </>
     );

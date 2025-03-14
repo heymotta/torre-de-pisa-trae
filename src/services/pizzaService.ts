@@ -23,7 +23,7 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     console.log('Pizzas fetched successfully:', data);
     
     // Map database fields to PizzaItem interface
-    return data.map(pizza => ({
+    const mappedPizzas = data.map(pizza => ({
       id: pizza.id,
       name: pizza.nome,
       description: pizza.descricao || '',
@@ -31,7 +31,10 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       image: pizza.imagem_url || '/placeholder.svg', // Use placeholder if no image
       category: pizza.categoria || 'tradicional',
       ingredients: pizza.ingredientes || []
-    })) as PizzaItem[];
+    }));
+    
+    console.log('Mapped pizzas:', mappedPizzas);
+    return mappedPizzas;
   } catch (error) {
     console.error('Failed to fetch pizzas:', error);
     throw error;

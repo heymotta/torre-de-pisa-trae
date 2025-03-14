@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { AlertCircle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/components/ui/use-toast';
 
 interface MenuErrorProps {
   children?: ReactNode;
@@ -13,6 +14,11 @@ const MenuError = ({ children }: MenuErrorProps) => {
   
   const handleRetry = () => {
     console.log('Tentando carregar o cardápio novamente...');
+    toast({
+      title: "Tentando novamente",
+      description: "Recarregando o cardápio...",
+      variant: "default",
+    });
     queryClient.invalidateQueries({ queryKey: ['pizzas'] });
   };
   

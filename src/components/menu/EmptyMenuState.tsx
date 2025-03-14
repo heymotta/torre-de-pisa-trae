@@ -2,12 +2,17 @@
 import { RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/components/ui/use-toast';
 
 const EmptyMenuState = () => {
   const queryClient = useQueryClient();
   
   const handleRefresh = () => {
     console.log('Tentando atualizar os dados do cardápio...');
+    toast({
+      title: "Atualizando cardápio",
+      description: "Buscando as pizzas disponíveis...",
+    });
     queryClient.invalidateQueries({ queryKey: ['pizzas'] });
   };
   
