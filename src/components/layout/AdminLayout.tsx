@@ -160,7 +160,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <User className="h-5 w-5 text-motta-700" />
               </div>
               <div>
-                <p className="font-medium text-sm">{user?.name}</p>
+                <p className="font-medium text-sm">{user?.nome}</p>
                 <p className="text-xs text-motta-600">{user?.email}</p>
               </div>
             </div>
@@ -228,7 +228,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <User className="h-5 w-5 text-motta-700" />
               </div>
               <div className={isSidebarOpen ? "" : "hidden"}>
-                <p className="font-medium text-sm">{user?.name}</p>
+                <p className="font-medium text-sm">{user?.nome}</p>
                 <p className="text-xs text-motta-600">{user?.email}</p>
               </div>
             </div>

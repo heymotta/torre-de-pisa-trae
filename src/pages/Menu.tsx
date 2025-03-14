@@ -17,7 +17,16 @@ const fetchPizzas = async () => {
     throw new Error(error.message);
   }
   
-  return data as PizzaItem[];
+  // Map database fields to PizzaItem interface
+  return data.map(pizza => ({
+    id: pizza.id,
+    name: pizza.nome,
+    description: pizza.descricao || '',
+    price: pizza.preco,
+    image: pizza.imagem_url || '',
+    category: pizza.categoria || 'tradicional', // Assuming default category if not available
+    ingredients: pizza.ingredientes || []
+  })) as PizzaItem[];
 };
 
 const Menu = () => {
