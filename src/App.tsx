@@ -10,6 +10,13 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Cart from "./pages/Cart";
 import Menu from "./pages/Menu";
+import Login from "./pages/Login";
+import OrderTracking from "./pages/OrderTracking";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminOrders from "./pages/admin/Orders";
+import AdminMenu from "./pages/admin/Menu";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AdminRoute from "./components/auth/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,10 +29,37 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/menu" element={<Menu />} />
               <Route path="/cart" element={<Cart />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Protected Customer Routes */}
+              <Route path="/orders" element={
+                <ProtectedRoute>
+                  <OrderTracking />
+                </ProtectedRoute>
+              } />
+              
+              {/* Protected Admin Routes */}
+              <Route path="/admin/dashboard" element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <AdminRoute>
+                  <AdminOrders />
+                </AdminRoute>
+              } />
+              <Route path="/admin/menu" element={
+                <AdminRoute>
+                  <AdminMenu />
+                </AdminRoute>
+              } />
+              
+              {/* Catch-all Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
