@@ -43,14 +43,12 @@ const Index = () => {
     hero: false,
     about: false,
     featured: false,
-    testimonials: false,
   });
   
   const sectionRefs = {
     hero: useRef<HTMLDivElement>(null),
     about: useRef<HTMLDivElement>(null),
     featured: useRef<HTMLDivElement>(null),
-    testimonials: useRef<HTMLDivElement>(null),
   };
 
   // Intersection observer for animations
@@ -108,7 +106,7 @@ const Index = () => {
         >
           <div className="max-w-2xl">
             <span className="inline-block bg-motta-secondary text-motta-900 font-semibold px-4 py-1 rounded-full mb-4 text-sm">
-              A melhor pizzaria da cidade
+              A mais tradicional de Piraju, desde 1991
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-white leading-tight mb-6">
               Experimente o <span className="text-motta-primary">verdadeiro</span> sabor italiano
@@ -145,17 +143,16 @@ const Index = () => {
             >
               <span className="text-motta-primary font-semibold">NOSSA HISTÓRIA</span>
               <h2 className="text-3xl sm:text-4xl font-display font-bold mt-2 mb-6">
-                Uma paixão por pizzas italianas desde 2015
+                Uma paixão por pizzas italianas desde 1991
               </h2>
               <p className="text-motta-700 mb-6">
-                Tudo começou com uma simples ideia: criar pizzas que realmente fazem diferença. 
-                Na Torre de Pisa, acreditamos que a qualidade dos ingredientes e o cuidado no preparo 
-                são essenciais para criar uma experiência gastronômica inesquecível.
+                A Torre de Pisa é uma pizzaria com anos de tradição em Piraju, São Paulo. 
+                Desde 1991, oferecemos pizzas saborosas e de qualidade para nossos clientes.
               </p>
               <p className="text-motta-700 mb-8">
-                Nossas pizzas são feitas diariamente com ingredientes selecionados, massa artesanal e 
-                molhos preparados na casa. Cada pizza é assada no ponto perfeito em forno a lenha e montada com carinho 
-                por nossa equipe de especialistas apaixonados por gastronomia italiana.
+                Nosso compromisso é sempre utilizar ingredientes frescos e de alta qualidade 
+                na preparação de nossas pizzas, garantindo assim o melhor sabor para nossos clientes. 
+                Venha nos visitar e experimente a verdadeira pizza italiana!
               </p>
               <PrimaryButton as={Link} to="/about">
                 Saiba Mais <ArrowRight className="ml-2 h-4 w-4" />
@@ -226,120 +223,6 @@ const Index = () => {
             <PrimaryButton as={Link} to="/menu">
               Ver Cardápio Completo <ArrowRight className="ml-2 h-4 w-4" />
             </PrimaryButton>
-          </div>
-        </div>
-      </section>
-      
-      {/* Testimonials */}
-      <section 
-        ref={sectionRefs.testimonials}
-        className="py-20 bg-motta-950 text-white"
-      >
-        <div className="container px-4 sm:px-6 lg:px-8">
-          <div 
-            className={`text-center max-w-2xl mx-auto mb-12 transition-all duration-1000 ${
-              isVisible.testimonials 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <span className="text-motta-secondary font-semibold">DEPOIMENTOS</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mt-2 mb-6">
-              O Que Nossos Clientes Dizem
-            </h2>
-            <p className="text-motta-400">
-              Veja o que nossos clientes estão falando sobre sua experiência com as 
-              pizzas Torre de Pisa.
-            </p>
-          </div>
-          
-          <div 
-            className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-1000 delay-500 ${
-              isVisible.testimonials 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            {/* Testimonial 1 */}
-            <div className="bg-motta-900/50 p-6 rounded-xl backdrop-blur-sm border border-motta-800">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/32.jpg" 
-                    alt="Cliente" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium">Ricardo Silva</h3>
-                  <div className="flex text-motta-secondary">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <p className="text-motta-300">
-                "A melhor pizza que já comi! A massa estava no ponto perfeito e os 
-                ingredientes super frescos. O atendimento também foi excelente."
-              </p>
-            </div>
-            
-            {/* Testimonial 2 */}
-            <div className="bg-motta-900/50 p-6 rounded-xl backdrop-blur-sm border border-motta-800">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
-                  <img 
-                    src="https://randomuser.me/api/portraits/women/44.jpg" 
-                    alt="Cliente" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium">Amanda Oliveira</h3>
-                  <div className="flex text-motta-secondary">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <p className="text-motta-300">
-                "Adoro a Pizza Quatro Queijos! A combinação de queijos é perfeita e a massa fina e crocante é incrível. 
-                Sempre peço quando tenho visitas em casa."
-              </p>
-            </div>
-            
-            {/* Testimonial 3 */}
-            <div className="bg-motta-900/50 p-6 rounded-xl backdrop-blur-sm border border-motta-800">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/62.jpg" 
-                    alt="Cliente" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium">Carlos Mendes</h3>
-                  <div className="flex text-motta-secondary">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <p className="text-motta-300">
-                "A Pizza Vegetariana é sensacional! Como opção vegetariana, é difícil encontrar 
-                pizzas tão saborosas. Recomendo para todos os meus amigos."
-              </p>
-            </div>
           </div>
         </div>
       </section>

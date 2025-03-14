@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { Instagram, Facebook, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -16,7 +16,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-motta-400 max-w-xs">
-              Sabor inigualável em cada fatia. Experimente a verdadeira pizza italiana Torre de Pisa.
+              A mais tradicional de Piraju, desde 1991. Experimente a verdadeira pizza italiana Torre de Pisa.
             </p>
             <div className="flex space-x-4">
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-motta-400 hover:text-motta-secondary transition-colors">
@@ -50,16 +50,19 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-display font-semibold text-lg mb-4">Informações</h3>
+            <h3 className="font-display font-semibold text-lg mb-4">Horário de Funcionamento</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/terms" className="text-motta-400 hover:text-white transition-colors">Termos de Uso</Link>
+              <li className="flex items-center">
+                <Clock size={16} className="mr-2 text-motta-400" />
+                <span className="text-motta-400">Segunda: 18:00-00:00</span>
               </li>
-              <li>
-                <Link to="/privacy" className="text-motta-400 hover:text-white transition-colors">Política de Privacidade</Link>
+              <li className="flex items-center">
+                <Clock size={16} className="mr-2 text-motta-400" />
+                <span className="text-motta-400">Terça: Fechado</span>
               </li>
-              <li>
-                <Link to="/faq" className="text-motta-400 hover:text-white transition-colors">Perguntas Frequentes</Link>
+              <li className="flex items-center">
+                <Clock size={16} className="mr-2 text-motta-400" />
+                <span className="text-motta-400">Quarta-Domingo: 18:00-00:00</span>
               </li>
             </ul>
           </div>
@@ -69,11 +72,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 text-motta-400 flex-shrink-0 mt-1" />
-                <span className="text-motta-400">Av. Principal, 123, Centro, Sua Cidade - Estado</span>
+                <span className="text-motta-400">Av. São Sebastião, 140 - Jardim Ana Maria, Piraju - SP, 18803-130</span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 text-motta-400" />
-                <a href="tel:+551199999999" className="text-motta-400 hover:text-white transition-colors">(11) 9999-9999</a>
+                <div className="flex flex-col">
+                  <a href="tel:+551433513504" className="text-motta-400 hover:text-white transition-colors">(14) 3351-3504</a>
+                  <a href="tel:+551433512684" className="text-motta-400 hover:text-white transition-colors">(14) 3351-2684</a>
+                  <a href="tel:+5514997060492" className="text-motta-400 hover:text-white transition-colors">(14) 99706-0492</a>
+                </div>
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="mr-2 text-motta-400" />
@@ -88,7 +95,7 @@ const Footer = () => {
             &copy; {currentYear} Torre de Pisa. Todos os direitos reservados.
           </p>
           <p className="text-motta-400 text-sm mt-2 md:mt-0">
-            Desenvolvido com ❤️ para pizzas autênticas
+            A mais tradicional de Piraju, desde 1991
           </p>
         </div>
       </div>
