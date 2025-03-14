@@ -1,9 +1,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { BurgerItem } from '@/components/ui/custom/BurgerCard';
+import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import { toast } from 'sonner';
 
-interface CartItem extends BurgerItem {
+interface CartItem extends PizzaItem {
   quantity: number;
 }
 
@@ -11,7 +11,7 @@ interface CartContextType {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
-  addItem: (item: BurgerItem) => void;
+  addItem: (item: PizzaItem) => void;
   removeItem: (id: string) => void;
   increaseQuantity: (id: string) => void;
   decreaseQuantity: (id: string) => void;
@@ -49,7 +49,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setTotalPrice(priceTotal);
   }, [items]);
 
-  const addItem = (item: BurgerItem) => {
+  const addItem = (item: PizzaItem) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(i => i.id === item.id);
       

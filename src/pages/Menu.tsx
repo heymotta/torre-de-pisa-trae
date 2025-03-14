@@ -6,309 +6,74 @@ import PizzaCard, { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-// Pizza menu data with all the requested pizzas
-const pizzas: PizzaItem[] = [
-  {
-    id: '1',
-    name: 'Margherita',
-    description: 'A clássica pizza italiana com molho de tomate, muçarela fresca e manjericão.',
-    price: 29.90,
-    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Manjericão', 'Azeite de oliva'],
-    category: 'tradicional'
-  },
-  {
-    id: '2',
-    name: 'Abobrinha com Tomate',
-    description: 'Deliciosa combinação de abobrinha fatiada e tomates frescos.',
-    price: 28.90,
-    image: 'https://images.unsplash.com/photo-1589840600056-a097a4a27357?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Abobrinha', 'Tomate', 'Orégano'],
-    category: 'vegetariana'
-  },
-  {
-    id: '3',
-    name: 'Alho e Óleo',
-    description: 'Pizza com alho dourado e azeite de oliva extra virgem.',
-    price: 26.90,
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Alho dourado', 'Azeite de oliva', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '4',
-    name: 'Aliche',
-    description: 'Pizza com filés de anchova, ideal para apreciadores de sabores marcantes.',
-    price: 34.90,
-    image: 'https://images.unsplash.com/photo-1595708684082-a173bb3a06c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Filés de anchova', 'Orégano'],
-    category: 'especial'
-  },
-  {
-    id: '5',
-    name: 'Atum',
-    description: 'Pizza de atum com cebola e orégano.',
-    price: 32.90,
-    image: 'https://images.unsplash.com/photo-1594007654729-407eedc4fe3c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Atum', 'Cebola', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '6',
-    name: '2 Queijos',
-    description: 'Deliciosa combinação de dois queijos diferentes: muçarela e parmesão.',
-    price: 29.90,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão'],
-    category: 'tradicional'
-  },
-  {
-    id: '7',
-    name: '3 Queijos',
-    description: 'Pizza com três tipos de queijos selecionados.',
-    price: 34.90,
-    image: 'https://images.unsplash.com/photo-1571066811602-716837d681de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão', 'Provolone'],
-    category: 'especial'
-  },
-  {
-    id: '8',
-    name: '4 Queijos',
-    description: 'Deliciosa combinação de quatro queijos diferentes: muçarela, parmesão, provolone e gorgonzola.',
-    price: 39.90,
-    image: 'https://images.unsplash.com/photo-1594007654729-407eedc4fe3c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão', 'Provolone', 'Gorgonzola'],
-    category: 'especial'
-  },
-  {
-    id: '9',
-    name: '5 Queijos',
-    description: 'A mais completa opção para os amantes de queijo, com cinco tipos diferentes.',
-    price: 42.90,
-    image: 'https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão', 'Provolone', 'Gorgonzola', 'Catupiry'],
-    category: 'especial'
-  },
-  {
-    id: '10',
-    name: 'Al Capone',
-    description: 'Pizza inspirada no famoso gangster, com pepperoni, pimentão e champignon.',
-    price: 38.90,
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Pepperoni', 'Pimentão', 'Champignon'],
-    category: 'especial'
-  },
-  {
-    id: '11',
-    name: 'Americana',
-    description: 'Pizza no estilo americano com bacon e milho.',
-    price: 33.90,
-    image: 'https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Bacon', 'Milho'],
-    category: 'tradicional'
-  },
-  {
-    id: '12',
-    name: 'Babbo',
-    description: 'Pizza especial da casa com presunto, champignon e catupiry.',
-    price: 37.90,
-    image: 'https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Presunto', 'Champignon', 'Catupiry'],
-    category: 'especial'
-  },
-  {
-    id: '13',
-    name: 'Bacon',
-    description: 'Pizza com generosas fatias de bacon crocante.',
-    price: 32.90,
-    image: 'https://images.unsplash.com/photo-1571066811602-716837d681de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Bacon', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '14',
-    name: 'Brasilica',
-    description: 'Pizza com os sabores do Brasil: milho, ervilha e palmito.',
-    price: 31.90,
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Milho', 'Ervilha', 'Palmito'],
-    category: 'tradicional'
-  },
-  {
-    id: '15',
-    name: 'Banana Caramelizada',
-    description: 'Pizza doce com bananas caramelizadas, canela e açúcar.',
-    price: 31.90,
-    image: 'https://images.unsplash.com/photo-1585505008861-a5c378857dcc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Banana', 'Açúcar', 'Canela', 'Leite condensado'],
-    category: 'doce'
-  },
-  {
-    id: '16',
-    name: 'Baiana',
-    description: 'Pizza com sabores típicos da Bahia, incluindo pimenta e azeite de dendê.',
-    price: 35.90,
-    image: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Calabresa', 'Pimenta', 'Cebola', 'Azeite de dendê'],
-    category: 'especial'
-  },
-  {
-    id: '17',
-    name: 'Bauru',
-    description: 'Inspirada no famoso sanduíche, com presunto, queijo e tomate.',
-    price: 30.90,
-    image: 'https://images.unsplash.com/photo-1571066811602-716837d681de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Presunto', 'Tomate', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '18',
-    name: 'Bella Itália',
-    description: 'Uma homenagem à Itália com ingredientes tradicionais italianos.',
-    price: 36.90,
-    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela de búfala', 'Tomate cereja', 'Manjericão', 'Azeite de oliva'],
-    category: 'especial'
-  },
-  {
-    id: '19',
-    name: 'Bersagliere',
-    description: 'Pizza com presunto, champignon e azeitonas pretas.',
-    price: 34.90,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Presunto', 'Champignon', 'Azeitonas pretas'],
-    category: 'especial'
-  },
-  {
-    id: '20',
-    name: 'Bolonhesa',
-    description: 'Pizza com molho à bolonhesa caseiro e queijo.',
-    price: 33.90,
-    image: 'https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho à bolonhesa', 'Muçarela', 'Orégano'],
-    category: 'tradicional'
-  },
-  // Continuando com as demais pizzas (adicionando apenas algumas das restantes para não tornar o código muito extenso)
-  {
-    id: '21',
-    name: 'Brasileira',
-    description: 'Pizza com os sabores do Brasil, incluindo milho, ervilha e palmito.',
-    price: 31.90,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Milho', 'Ervilha', 'Palmito', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '22',
-    name: 'Calabresa',
-    description: 'Pizza com calabresa fatiada, cebola e um toque de orégano.',
-    price: 27.90,
-    image: 'https://images.unsplash.com/photo-1589840600056-a097a4a27357?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Calabresa', 'Cebola', 'Orégano'],
-    category: 'tradicional'
-  },
-  {
-    id: '23',
-    name: 'Brócolis',
-    description: 'Pizza vegetariana com brócolis frescos e queijo.',
-    price: 28.90,
-    image: 'https://images.unsplash.com/photo-1604917877934-07d8d248d396?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Brócolis', 'Alho', 'Azeite', 'Orégano'],
-    category: 'vegetariana'
-  },
-  {
-    id: '24',
-    name: 'Brigadeiro',
-    description: 'Pizza doce com chocolate e granulado, sabor tradicional de brigadeiro.',
-    price: 31.90,
-    image: 'https://images.unsplash.com/photo-1585505008861-a5c378857dcc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Chocolate', 'Granulado', 'Leite condensado'],
-    category: 'doce'
-  },
-  {
-    id: '25',
-    name: 'Brigadeiro com Sorvete',
-    description: 'Pizza doce de brigadeiro servida com sorvete de creme.',
-    price: 37.90,
-    image: 'https://images.unsplash.com/photo-1585505008861-a5c378857dcc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Chocolate', 'Granulado', 'Leite condensado', 'Sorvete de creme'],
-    category: 'doce'
-  },
-  {
-    id: '26',
-    name: 'Caprese',
-    description: 'Pizza inspirada na salada italiana, com muçarela de búfala, tomate e manjericão.',
-    price: 36.90,
-    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela de búfala', 'Tomate', 'Manjericão', 'Azeite de oliva'],
-    category: 'vegetariana'
-  },
-  {
-    id: '27',
-    name: 'Carne Seca',
-    description: 'Pizza com carne seca desfiada e cebola.',
-    price: 39.90,
-    image: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Carne seca desfiada', 'Cebola', 'Orégano'],
-    category: 'especial'
-  },
-  {
-    id: '28',
-    name: 'Portuguesa',
-    description: 'Clássica pizza portuguesa com presunto, ovos, cebola e ervilhas.',
-    price: 32.90,
-    image: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Presunto', 'Ovos', 'Cebola', 'Ervilhas', 'Azeitonas'],
-    category: 'tradicional'
-  },
-  {
-    id: '29',
-    name: 'Strogonoff de Frango',
-    description: 'Inovadora pizza com cobertura de strogonoff de frango e batata palha.',
-    price: 38.90,
-    image: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Molho de tomate', 'Muçarela', 'Strogonoff de frango', 'Batata palha'],
-    category: 'especial'
-  },
-  {
-    id: '30',
-    name: 'Chocolate com Morango',
-    description: 'Pizza doce com chocolate derretido e morangos frescos.',
-    price: 31.90,
-    image: 'https://images.unsplash.com/photo-1585505008861-a5c378857dcc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Chocolate', 'Morangos', 'Açúcar confeiteiro'],
-    category: 'doce'
-  }
-];
-
+// Definimos os tipos para as categorias
 type Category = 'todos' | 'tradicional' | 'especial' | 'vegetariana' | 'doce' | 'borda-recheada';
 
 const Menu = () => {
+  const [pizzas, setPizzas] = useState<PizzaItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('todos');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>(pizzas);
+  const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate loading state
+  // Buscar pizzas do Supabase
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    const fetchPizzas = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('pizzas')
+          .select('*')
+          .eq('disponivel', true);
+          
+        if (error) {
+          throw error;
+        }
+        
+        // Mapear os dados para o formato esperado pelo componente PizzaCard
+        const formattedPizzas: PizzaItem[] = data.map(pizza => ({
+          id: pizza.id,
+          name: pizza.nome,
+          description: pizza.descricao || '',
+          price: parseFloat(pizza.preco),
+          image: pizza.imagem_url || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1400&q=80',
+          // Atribuímos uma categoria padrão já que não temos esse campo no banco
+          category: 'tradicional',
+          // Adicionamos ingredientes vazios já que não temos esse campo no banco
+          ingredients: []
+        }));
+        
+        setPizzas(formattedPizzas);
+      } catch (error) {
+        console.error('Erro ao buscar pizzas:', error);
+        toast.error('Não foi possível carregar o cardápio. Tente novamente.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPizzas();
   }, []);
 
-  // Filter pizzas based on category and search term
+  // Filtrar pizzas baseado na categoria e termo de busca
   useEffect(() => {
+    if (pizzas.length === 0) {
+      setFilteredPizzas([]);
+      return;
+    }
+    
     const filtered = pizzas.filter(pizza => {
-      const matchesCategory = activeCategory === 'todos' || pizza.category === activeCategory;
+      // Como não temos categorias no banco, só filtramos pelo termo de busca
       const matchesSearch = pizza.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            pizza.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
+                           pizza.description.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
     });
     
     setFilteredPizzas(filtered);
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, pizzas]);
 
   return (
     <div className="min-h-screen flex flex-col">

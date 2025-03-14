@@ -9,13 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      pedido_itens: {
+        Row: {
+          id: string
+          pedido_id: string
+          pizza_id: string
+          quantidade: number
+          subtotal: number
+        }
+        Insert: {
+          id?: string
+          pedido_id: string
+          pizza_id: string
+          quantidade: number
+          subtotal: number
+        }
+        Update: {
+          id?: string
+          pedido_id?: string
+          pizza_id?: string
+          quantidade?: number
+          subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_itens_pizza_id_fkey"
+            columns: ["pizza_id"]
+            isOneToOne: false
+            referencedRelation: "pizzas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          criado_em: string
+          id: string
+          status: string
+          total: number
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          status?: string
+          total: number
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          status?: string
+          total?: number
+          usuario_id?: string
+        }
+        Relationships: []
+      }
+      pizzas: {
+        Row: {
+          criado_em: string
+          descricao: string | null
+          disponivel: boolean
+          id: string
+          imagem_url: string | null
+          nome: string
+          preco: number
+        }
+        Insert: {
+          criado_em?: string
+          descricao?: string | null
+          disponivel?: boolean
+          id?: string
+          imagem_url?: string | null
+          nome: string
+          preco: number
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string | null
+          disponivel?: boolean
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+          preco?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          criado_em: string
+          endereco: string | null
+          id: string
+          nome: string
+          telefone: string | null
+        }
+        Insert: {
+          criado_em?: string
+          endereco?: string | null
+          id: string
+          nome: string
+          telefone?: string | null
+        }
+        Update: {
+          criado_em?: string
+          endereco?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

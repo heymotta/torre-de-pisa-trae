@@ -9,10 +9,11 @@ import PrimaryButton from '@/components/ui/custom/PrimaryButton';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Cart = () => {
   const { items, totalItems, totalPrice, clearCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ const Cart = () => {
     }).format(price);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       toast.error('Você precisa fazer login para finalizar o pedido', {
         description: 'Por favor, faça login para continuar.'
@@ -32,17 +33,60 @@ const Cart = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('Não foi possível identificar seu usuário');
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulate checkout process
-    setTimeout(() => {
+    try {
+      // 1. Criar um novo pedido
+      const { data: pedido, error: pedidoError } = await supabase
+        .from('pedidos')
+        .insert({
+          usuario_id: user.id,
+          total: totalPrice + 5.90, // Total + taxa de entrega
+          status: 'pendente'
+        })
+        .select()
+        .single();
+
+      if (pedidoError) {
+        throw pedidoError;
+      }
+
+      // 2. Adicionar itens ao pedido
+      const pedidoItens = items.map(item => ({
+        pedido_id: pedido.id,
+        pizza_id: item.id,
+        quantidade: item.quantity,
+        subtotal: item.price * item.quantity
+      }));
+
+      const { error: itensError } = await supabase
+        .from('pedido_itens')
+        .insert(pedidoItens);
+
+      if (itensError) {
+        throw itensError;
+      }
+
+      // 3. Finalizar pedido
       toast.success('Pedido realizado com sucesso!', {
         description: 'Seu pedido foi enviado e está sendo preparado.',
       });
+
       clearCart();
+      navigate('/orders');
+    } catch (error) {
+      console.error('Erro ao finalizar pedido:', error);
+      toast.error('Erro ao finalizar pedido', {
+        description: 'Tente novamente mais tarde.'
+      });
+    } finally {
       setIsSubmitting(false);
-      navigate('/');
-    }, 1500);
+    }
   };
 
   return (
@@ -150,7 +194,7 @@ const Cart = () => {
               <h2 className="text-2xl font-display font-semibold mb-2">Seu carrinho está vazio</h2>
               <p className="text-motta-600 max-w-md mx-auto mb-8">
                 Parece que você ainda não adicionou nenhum item ao seu carrinho.
-                Explore nosso cardápio e descubra hambúrgueres deliciosos!
+                Explore nosso cardápio e descubra pizzas deliciosas!
               </p>
               <PrimaryButton as={Link} to="/menu">
                 Ver Cardápio

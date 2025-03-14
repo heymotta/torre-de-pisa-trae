@@ -1,139 +1,143 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, ArrowLeft, Clock, CheckCircle, TruckIcon, BadgeInfo } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Clock, 
+  CheckCircle, 
+  ChefHat, 
+  Truck, 
+  Package, 
+  ArrowLeft 
+} from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Progress } from '@/components/ui/progress';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-// Order status types
-type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivering' | 'delivered';
+interface OrderItem {
+  id: string;
+  pedido_id: string;
+  pizza_id: string;
+  quantidade: number;
+  subtotal: number;
+  pizza: {
+    nome: string;
+    preco: number;
+    imagem_url?: string;
+  };
+}
 
 interface Order {
   id: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  status: OrderStatus;
+  status: string;
   total: number;
-  createdAt: string;
-  deliveryAddress: string;
-  estimatedDelivery?: string;
+  criado_em: string;
+  itens: OrderItem[];
 }
 
-// Mock orders data - in a real app, this would come from an API
-const mockOrders: Order[] = [
-  {
-    id: '1001',
-    items: [
-      { name: 'Classic Motta', quantity: 2, price: 29.90 },
-      { name: 'Motta Bacon', quantity: 1, price: 32.90 },
-    ],
-    status: 'preparing',
-    total: 92.70,
-    createdAt: new Date(Date.now() - 40 * 60000).toISOString(),
-    deliveryAddress: 'Rua das Flores, 123, Jardim Primavera, São Paulo - SP',
-    estimatedDelivery: new Date(Date.now() + 30 * 60000).toISOString(),
-  },
-  {
-    id: '1000',
-    items: [
-      { name: 'Veggie Motta', quantity: 1, price: 28.90 },
-      { name: 'Double Motta', quantity: 1, price: 39.90 },
-    ],
-    status: 'delivered',
-    total: 68.80,
-    createdAt: new Date(Date.now() - 24 * 60 * 60000).toISOString(),
-    deliveryAddress: 'Rua das Flores, 123, Jardim Primavera, São Paulo - SP',
-  }
+const statusSteps = [
+  { key: 'pendente', label: 'Pendente', icon: Clock },
+  { key: 'em preparo', label: 'Em preparo', icon: ChefHat },
+  { key: 'saiu para entrega', label: 'Saiu para entrega', icon: Truck },
+  { key: 'entregue', label: 'Entregue', icon: CheckCircle }
 ];
 
-const OrderStatusDisplay = ({ status }: { status: OrderStatus }) => {
-  const statusInfo = {
-    pending: {
-      title: 'Pendente',
-      description: 'Aguardando confirmação do restaurante',
-      icon: Clock,
-      color: 'text-yellow-500',
-      progress: 0
-    },
-    preparing: {
-      title: 'Em Preparo',
-      description: 'Seu pedido está sendo preparado',
-      icon: BadgeInfo,
-      color: 'text-blue-500',
-      progress: 25
-    },
-    ready: {
-      title: 'Pronto',
-      description: 'Seu pedido está pronto e aguardando o entregador',
-      icon: CheckCircle,
-      color: 'text-green-500',
-      progress: 50
-    },
-    delivering: {
-      title: 'Saiu para Entrega',
-      description: 'Seu pedido está a caminho',
-      icon: TruckIcon,
-      color: 'text-purple-500',
-      progress: 75
-    },
-    delivered: {
-      title: 'Entregue',
-      description: 'Seu pedido foi entregue. Bom apetite!',
-      icon: CheckCircle,
-      color: 'text-green-500',
-      progress: 100
-    }
-  };
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+};
 
-  const { title, description, icon: Icon, color, progress } = statusInfo[status];
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        <Icon className={`h-5 w-5 ${color}`} />
-        <span className="font-medium">{title}</span>
-      </div>
-      <Progress value={progress} className="h-2" />
-      <p className="text-sm text-motta-600">{description}</p>
-    </div>
-  );
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(price);
 };
 
 const OrderTracking = () => {
-  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  // Fetch orders
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    if (!isAuthenticated) {
+      return;
+    }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        // 1. Buscar os pedidos do usuário
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('usuario_id', user?.id)
+          .order('criado_em', { ascending: false });
+
+        if (ordersError) throw ordersError;
+        if (!ordersData) return;
+        
+        // 2. Para cada pedido, buscar os seus itens
+        const ordersWithItems = await Promise.all(
+          ordersData.map(async (order) => {
+            const { data: itemsData, error: itemsError } = await supabase
+              .from('pedido_itens')
+              .select(`
+                *,
+                pizza:pizza_id (
+                  nome,
+                  preco,
+                  imagem_url
+                )
+              `)
+              .eq('pedido_id', order.id);
+
+            if (itemsError) throw itemsError;
+            
+            return {
+              ...order,
+              itens: itemsData || []
+            };
+          })
+        );
+        
+        setOrders(ordersWithItems);
+      } catch (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        toast.error('Erro ao carregar seus pedidos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [user, isAuthenticated]);
+
+  const getStatusIndex = (status: string) => {
+    return statusSteps.findIndex(step => step.key === status);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
+  const toggleOrderDetails = (orderId: string) => {
+    if (expandedOrder === orderId) {
+      setExpandedOrder(null);
+    } else {
+      setExpandedOrder(orderId);
+    }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -143,82 +147,136 @@ const OrderTracking = () => {
         <div className="container px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-display font-bold flex items-center">
-              <Package className="mr-2 h-7 w-7" /> Meus Pedidos
+              <Package className="mr-2 h-8 w-8" /> Meus Pedidos
             </h1>
-            <Link 
-              to="/menu" 
-              className="text-motta-600 hover:text-motta-primary transition-colors flex items-center"
+            <Button
+              variant="outline"
+              onClick={() => navigate('/menu')}
+              className="flex items-center"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" /> Voltar para o Cardápio
-            </Link>
+              <ArrowLeft className="mr-1 h-4 w-4" /> Voltar ao Cardápio
+            </Button>
           </div>
-          
+
           {loading ? (
-            <div className="py-12 text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-motta-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p>Carregando seus pedidos...</p>
+            <div className="animate-pulse space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-motta-200 overflow-hidden">
+                  <div className="p-4 border-b border-motta-200 bg-motta-50 flex justify-between">
+                    <div className="h-6 bg-motta-200 rounded w-1/4"></div>
+                    <div className="h-6 bg-motta-200 rounded w-1/5"></div>
+                  </div>
+                  <div className="p-6">
+                    <div className="h-24 bg-motta-200 rounded"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : orders.length > 0 ? (
-            <div className="space-y-8">
-              {orders.map((order) => (
-                <div key={order.id} className="bg-white rounded-xl shadow-sm border border-motta-200 overflow-hidden">
-                  <div className="p-4 border-b border-motta-200 bg-motta-50 flex justify-between items-center flex-wrap gap-2">
-                    <div>
-                      <span className="text-sm text-motta-600">Pedido #{order.id}</span>
-                      <h3 className="font-medium">{formatDate(order.createdAt)}</h3>
+            <div className="space-y-6">
+              {orders.map(order => (
+                <div 
+                  key={order.id} 
+                  className="bg-white rounded-xl shadow-sm border border-motta-200 overflow-hidden transition-all duration-300"
+                >
+                  <div 
+                    className="p-4 border-b border-motta-200 bg-motta-50 flex justify-between items-center cursor-pointer"
+                    onClick={() => toggleOrderDetails(order.id)}
+                  >
+                    <div className="flex items-center">
+                      <span className="font-medium">Pedido #{order.id.substring(0, 8)}</span>
+                      <span className="mx-3 text-motta-300">•</span>
+                      <span className="text-sm text-motta-600">{formatDate(order.criado_em)}</span>
                     </div>
-                    
-                    <div className="text-right">
-                      <span className="text-sm text-motta-600">Total</span>
-                      <p className="font-bold text-motta-primary">{formatPrice(order.total)}</p>
+                    <div className="flex items-center">
+                      <span className="font-medium text-motta-primary">{formatPrice(parseFloat(order.total.toString()))}</span>
                     </div>
                   </div>
                   
-                  <div className="p-4 space-y-4">
-                    <OrderStatusDisplay status={order.status} />
-                    
-                    {order.estimatedDelivery && order.status !== 'delivered' && (
-                      <p className="text-sm bg-motta-50 p-2 rounded-md">
-                        <span className="font-medium">Entrega estimada:</span> {formatDate(order.estimatedDelivery)}
-                      </p>
-                    )}
-                    
-                    <div className="mt-4">
-                      <h4 className="font-medium mb-2">Itens do Pedido</h4>
-                      <div className="space-y-2">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="flex justify-between text-sm">
-                            <span>{item.quantity}x {item.name}</span>
-                            <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
-                          </div>
-                        ))}
+                  <div className={`transition-all duration-300 overflow-hidden ${expandedOrder === order.id ? 'max-h-[2000px]' : 'max-h-0'}`}>
+                    <div className="p-6">
+                      <div className="mb-6">
+                        <h3 className="font-medium mb-3">Status do Pedido</h3>
+                        <div className="relative flex justify-between">
+                          {statusSteps.map((step, index) => {
+                            const currentStatus = getStatusIndex(order.status);
+                            const isActive = index <= currentStatus;
+                            const StepIcon = step.icon;
+                            
+                            return (
+                              <div key={step.key} className="flex flex-col items-center z-10">
+                                <div className={`${isActive ? 'bg-motta-primary text-white' : 'bg-motta-100 text-motta-400'} h-10 w-10 rounded-full flex items-center justify-center transition-colors`}>
+                                  <StepIcon className="h-5 w-5" />
+                                </div>
+                                <span className={`text-xs mt-2 text-center max-w-[80px] ${isActive ? 'text-motta-primary font-medium' : 'text-motta-400'}`}>
+                                  {step.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          
+                          {/* Progress line */}
+                          <div className="absolute top-5 left-0 w-full h-0.5 bg-motta-100 -z-10"></div>
+                          <div 
+                            className="absolute top-5 left-0 h-0.5 bg-motta-primary -z-10 transition-all duration-500"
+                            style={{ 
+                              width: `${getStatusIndex(order.status) / (statusSteps.length - 1) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <h4 className="font-medium mb-2">Endereço de Entrega</h4>
-                      <p className="text-sm">{order.deliveryAddress}</p>
+                      
+                      <div className="mb-6">
+                        <h3 className="font-medium mb-3">Itens do Pedido</h3>
+                        <div className="space-y-4">
+                          {order.itens.map(item => (
+                            <div key={item.id} className="flex items-center py-2 border-b border-motta-100">
+                              <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
+                                <img 
+                                  src={item.pizza?.imagem_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=100&q=80"} 
+                                  alt={item.pizza?.nome} 
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              
+                              <div className="ml-4 flex-grow">
+                                <h4 className="font-medium">{item.pizza?.nome}</h4>
+                                <p className="text-sm text-motta-600">
+                                  Quantidade: {item.quantidade}
+                                </p>
+                              </div>
+                              
+                              <div className="text-right ml-4">
+                                <p className="font-medium">{formatPrice(parseFloat(item.subtotal.toString()))}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-3 border-t border-motta-200">
+                        <div className="flex justify-between font-bold">
+                          <span>Total</span>
+                          <span className="text-motta-primary">{formatPrice(parseFloat(order.total.toString()))}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-motta-200">
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-motta-200 animate-fade-in">
               <div className="flex justify-center mb-4">
                 <Package className="h-16 w-16 text-motta-400" />
               </div>
               <h2 className="text-2xl font-display font-semibold mb-2">Nenhum pedido encontrado</h2>
               <p className="text-motta-600 max-w-md mx-auto mb-8">
-                Você ainda não fez nenhum pedido.
-                Explore nosso cardápio e faça seu primeiro pedido!
+                Você ainda não realizou nenhum pedido. Explore nosso cardápio e faça seu primeiro pedido!
               </p>
-              <Link 
-                to="/menu" 
-                className="inline-flex items-center justify-center px-6 py-2 bg-motta-primary text-white rounded-full hover:bg-motta-primary/90 transition-colors"
-              >
+              <Button onClick={() => navigate('/menu')} className="bg-motta-primary hover:bg-motta-primary/90">
                 Ver Cardápio
-              </Link>
+              </Button>
             </div>
           )}
         </div>
