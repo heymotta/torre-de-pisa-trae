@@ -12,11 +12,11 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <span className="font-display font-bold text-2xl">
-                Motta<span className="text-motta-secondary">Burguer</span>
+                Torre<span className="text-motta-secondary">de Pisa</span>
               </span>
             </Link>
             <p className="text-motta-400 max-w-xs">
-              Sabor inigualável em cada mordida. Experimente a verdadeira experiência Motta Burguer.
+              Sabor inigualável em cada fatia. Experimente a verdadeira pizza italiana Torre de Pisa.
             </p>
             <div className="flex space-x-4">
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-motta-400 hover:text-motta-secondary transition-colors">
@@ -77,7 +77,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="mr-2 text-motta-400" />
-                <a href="mailto:contato@mottaburguer.com" className="text-motta-400 hover:text-white transition-colors">contato@mottaburguer.com</a>
+                <a href="mailto:contato@torredepisa.com" className="text-motta-400 hover:text-white transition-colors">contato@torredepisa.com</a>
               </li>
             </ul>
           </div>
@@ -85,10 +85,10 @@ const Footer = () => {
 
         <div className="border-t border-motta-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-motta-400 text-sm">
-            &copy; {currentYear} Motta Burguer. Todos os direitos reservados.
+            &copy; {currentYear} Torre de Pisa. Todos os direitos reservados.
           </p>
           <p className="text-motta-400 text-sm mt-2 md:mt-0">
-            Desenvolvido com ❤️ para sabores incríveis
+            Desenvolvido com ❤️ para pizzas autênticas
           </p>
         </div>
       </div>

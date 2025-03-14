@@ -4,7 +4,7 @@ import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { BurgerItem } from '@/components/ui/custom/BurgerCard';
+import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import {
   Card,
   CardContent,
@@ -17,11 +17,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { BurgerForm } from '@/components/admin/BurgerForm';
+import { PizzaForm } from '@/components/admin/PizzaForm';
 import { toast } from 'sonner';
 import {
   Select,
@@ -31,129 +28,129 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Extend the BurgerItem interface to include an optional id for new items
-type AdminBurgerItem = BurgerItem;
+// Extend the PizzaItem interface to include an optional id for new items
+type AdminPizzaItem = PizzaItem;
 
 // Mock menu data - same as in Menu.tsx
-const initialBurgers: AdminBurgerItem[] = [
+const initialPizzas: AdminPizzaItem[] = [
   {
     id: '1',
-    name: 'Classic Motta',
-    description: 'Hambúrguer artesanal, queijo cheddar, alface, tomate, cebola caramelizada e nosso molho especial.',
+    name: 'Margherita',
+    description: 'A clássica pizza italiana com molho de tomate, muçarela fresca e manjericão.',
     price: 29.90,
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer 180g', 'Queijo Cheddar', 'Alface', 'Tomate', 'Cebola Caramelizada', 'Molho Especial'],
+    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Manjericão', 'Azeite de oliva'],
     category: 'tradicional'
   },
   {
     id: '2',
-    name: 'Motta Bacon',
-    description: 'Hambúrguer artesanal, queijo cheddar, bacon crocante, cebola crispy e nosso molho barbecue.',
+    name: 'Pepperoni',
+    description: 'Pizza com generosas fatias de pepperoni e queijo muçarela derretido.',
     price: 32.90,
-    image: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer 180g', 'Queijo Cheddar', 'Bacon Crocante', 'Cebola Crispy', 'Molho Barbecue'],
+    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Pepperoni'],
     category: 'especial'
   },
   {
     id: '3',
-    name: 'Veggie Motta',
-    description: 'Hambúrguer vegetal, queijo vegano, rúcula, tomate, abacate e maionese vegana.',
+    name: 'Vegetariana',
+    description: 'Seleção de vegetais frescos com queijo e molho especial da casa.',
     price: 28.90,
-    image: 'https://images.unsplash.com/photo-1550317138-10000687a72b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer Vegetal', 'Queijo Vegano', 'Rúcula', 'Tomate', 'Abacate', 'Maionese Vegana'],
-    category: 'vegano'
+    image: 'https://images.unsplash.com/photo-1604917877934-07d8d248d396?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Pimentão', 'Cebola', 'Cogumelos', 'Azeitonas', 'Tomate'],
+    category: 'vegetariana'
   },
   {
     id: '4',
-    name: 'Double Motta',
-    description: 'Dois hambúrgueres artesanais, queijo cheddar duplo, bacon crocante e molho especial.',
+    name: 'Quatro Queijos',
+    description: 'Deliciosa combinação de quatro queijos diferentes: muçarela, parmesão, provolone e gorgonzola.',
     price: 39.90,
-    image: 'https://images.unsplash.com/photo-1553979458-12217a83c819?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['2 Hambúrgueres 180g', 'Queijo Cheddar Duplo', 'Bacon Crocante', 'Molho Especial'],
+    image: 'https://images.unsplash.com/photo-1594007654729-407eedc4fe3c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão', 'Provolone', 'Gorgonzola'],
     category: 'especial'
   },
   {
     id: '5',
-    name: 'Chicken Motta',
-    description: 'Filé de frango empanado, queijo muçarela, alface, tomate e maionese de ervas.',
+    name: 'Calabresa',
+    description: 'Pizza com calabresa fatiada, cebola e um toque de orégano.',
     price: 27.90,
-    image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Filé de Frango Empanado', 'Queijo Muçarela', 'Alface', 'Tomate', 'Maionese de Ervas'],
-    category: 'frango'
+    image: 'https://images.unsplash.com/photo-1589840600056-a097a4a27357?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Calabresa', 'Cebola', 'Orégano'],
+    category: 'tradicional'
   },
   {
     id: '6',
-    name: 'Motta Fish',
-    description: 'Filé de peixe empanado, queijo, alface, picles e molho tártaro.',
+    name: 'Chocolate com Morango',
+    description: 'Pizza doce com chocolate derretido e morangos frescos.',
     price: 31.90,
-    image: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Filé de Peixe Empanado', 'Queijo', 'Alface', 'Picles', 'Molho Tártaro'],
-    category: 'peixe'
+    image: 'https://images.unsplash.com/photo-1585505008861-a5c378857dcc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Chocolate', 'Morangos', 'Açúcar confeiteiro'],
+    category: 'doce'
   }
 ];
 
 const AdminMenu = () => {
-  const [burgers, setBurgers] = useState<AdminBurgerItem[]>([]);
+  const [pizzas, setPizzas] = useState<AdminPizzaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [editingBurger, setEditingBurger] = useState<AdminBurgerItem | null>(null);
+  const [editingPizza, setEditingPizza] = useState<AdminPizzaItem | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [burgerToDelete, setBurgerToDelete] = useState<string | null>(null);
+  const [pizzaToDelete, setPizzaToDelete] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Load data
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
-      setBurgers(initialBurgers);
+      setPizzas(initialPizzas);
       setLoading(false);
     }, 1000);
   }, []);
 
-  // Filter burgers
-  const filteredBurgers = burgers.filter(burger => {
-    const matchesSearch = burger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          burger.description.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter pizzas
+  const filteredPizzas = pizzas.filter(pizza => {
+    const matchesSearch = pizza.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          pizza.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = categoryFilter === 'all' || burger.category === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' || pizza.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
   });
 
-  const handleAddBurger = (newBurger: AdminBurgerItem) => {
+  const handleAddPizza = (newPizza: AdminPizzaItem) => {
     // In a real app, this would be an API call
-    const burgerId = String(Math.max(...burgers.map(b => Number(b.id))) + 1);
-    const burgerWithId = { ...newBurger, id: burgerId };
+    const pizzaId = String(Math.max(...pizzas.map(b => Number(b.id))) + 1);
+    const pizzaWithId = { ...newPizza, id: pizzaId };
     
-    setBurgers(prev => [...prev, burgerWithId]);
+    setPizzas(prev => [...prev, pizzaWithId]);
     setIsFormOpen(false);
-    toast.success('Hambúrguer adicionado com sucesso!');
+    toast.success('Pizza adicionada com sucesso!');
   };
 
-  const handleUpdateBurger = (updatedBurger: AdminBurgerItem) => {
+  const handleUpdatePizza = (updatedPizza: AdminPizzaItem) => {
     // In a real app, this would be an API call
-    setBurgers(prev => 
-      prev.map(burger => 
-        burger.id === updatedBurger.id ? updatedBurger : burger
+    setPizzas(prev => 
+      prev.map(pizza => 
+        pizza.id === updatedPizza.id ? updatedPizza : pizza
       )
     );
-    setEditingBurger(null);
-    toast.success('Hambúrguer atualizado com sucesso!');
+    setEditingPizza(null);
+    toast.success('Pizza atualizada com sucesso!');
   };
 
-  const handleDeleteBurger = () => {
-    if (!burgerToDelete) return;
+  const handleDeletePizza = () => {
+    if (!pizzaToDelete) return;
     
     // In a real app, this would be an API call
-    setBurgers(prev => prev.filter(burger => burger.id !== burgerToDelete));
+    setPizzas(prev => prev.filter(pizza => pizza.id !== pizzaToDelete));
     setIsDeleteDialogOpen(false);
-    setBurgerToDelete(null);
-    toast.success('Hambúrguer removido com sucesso!');
+    setPizzaToDelete(null);
+    toast.success('Pizza removida com sucesso!');
   };
 
-  const openDeleteDialog = (burgerId: string) => {
-    setBurgerToDelete(burgerId);
+  const openDeleteDialog = (pizzaId: string) => {
+    setPizzaToDelete(pizzaId);
     setIsDeleteDialogOpen(true);
   };
 
@@ -180,7 +177,7 @@ const AdminMenu = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-motta-500" />
           <Input 
             type="search" 
-            placeholder="Buscar hambúrgueres..." 
+            placeholder="Buscar pizzas..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -197,10 +194,10 @@ const AdminMenu = () => {
           <SelectContent>
             <SelectItem value="all">Todas as categorias</SelectItem>
             <SelectItem value="tradicional">Tradicionais</SelectItem>
-            <SelectItem value="especial">Especiais</SelectItem>
-            <SelectItem value="vegano">Veganos</SelectItem>
-            <SelectItem value="frango">Frango</SelectItem>
-            <SelectItem value="peixe">Peixe</SelectItem>
+            <SelectItem value="especial">Premium</SelectItem>
+            <SelectItem value="vegetariana">Vegetarianas</SelectItem>
+            <SelectItem value="doce">Doces</SelectItem>
+            <SelectItem value="borda-recheada">Bordas Recheadas</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -222,14 +219,14 @@ const AdminMenu = () => {
             </Card>
           ))}
         </div>
-      ) : filteredBurgers.length > 0 ? (
+      ) : filteredPizzas.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBurgers.map((burger) => (
-            <Card key={burger.id} className="overflow-hidden">
+          {filteredPizzas.map((pizza) => (
+            <Card key={pizza.id} className="overflow-hidden">
               <div className="relative h-48">
                 <img
-                  src={burger.image}
-                  alt={burger.name}
+                  src={pizza.image}
+                  alt={pizza.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2 right-2 flex space-x-1">
@@ -237,7 +234,7 @@ const AdminMenu = () => {
                     size="icon" 
                     variant="default" 
                     className="h-8 w-8 bg-white/90 text-motta-700 hover:bg-white"
-                    onClick={() => setEditingBurger(burger)}
+                    onClick={() => setEditingPizza(pizza)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -245,7 +242,7 @@ const AdminMenu = () => {
                     size="icon" 
                     variant="destructive" 
                     className="h-8 w-8"
-                    onClick={() => openDeleteDialog(burger.id)}
+                    onClick={() => openDeleteDialog(pizza.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -253,16 +250,16 @@ const AdminMenu = () => {
               </div>
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-lg">{burger.name}</h3>
-                  <span className="font-bold text-motta-primary">{formatPrice(burger.price)}</span>
+                  <h3 className="font-medium text-lg">{pizza.name}</h3>
+                  <span className="font-bold text-motta-primary">{formatPrice(pizza.price)}</span>
                 </div>
-                <p className="text-motta-600 text-sm mb-2 line-clamp-2">{burger.description}</p>
+                <p className="text-motta-600 text-sm mb-2 line-clamp-2">{pizza.description}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   <span className="text-xs px-2 py-0.5 bg-motta-100 text-motta-700 rounded-full">
-                    {burger.category}
+                    {pizza.category}
                   </span>
                   <span className="text-xs px-2 py-0.5 bg-motta-100 text-motta-700 rounded-full">
-                    {burger.ingredients?.length || 0} ingredientes
+                    {pizza.ingredients?.length || 0} ingredientes
                   </span>
                 </div>
               </CardContent>
@@ -271,7 +268,7 @@ const AdminMenu = () => {
                   variant="outline" 
                   size="sm" 
                   className="w-full"
-                  onClick={() => setEditingBurger(burger)}
+                  onClick={() => setEditingPizza(pizza)}
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Editar Item
@@ -285,9 +282,9 @@ const AdminMenu = () => {
           <div className="flex justify-center mb-4">
             <Search className="h-12 w-12 text-motta-400" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">Nenhum hambúrguer encontrado</h2>
+          <h2 className="text-xl font-semibold mb-2">Nenhuma pizza encontrada</h2>
           <p className="text-motta-600 max-w-md mx-auto mb-6">
-            Não encontramos hambúrgueres com os filtros atuais. Tente ajustar os filtros ou criar um novo item.
+            Não encontramos pizzas com os filtros atuais. Tente ajustar os filtros ou criar um novo item.
           </p>
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -296,28 +293,28 @@ const AdminMenu = () => {
         </div>
       )}
 
-      {/* Add/Edit Burger Dialog */}
-      <Dialog open={!!editingBurger || isFormOpen} onOpenChange={(open) => {
+      {/* Add/Edit Pizza Dialog */}
+      <Dialog open={!!editingPizza || isFormOpen} onOpenChange={(open) => {
         if (!open) {
-          setEditingBurger(null);
+          setEditingPizza(null);
           setIsFormOpen(false);
         }
       }}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{editingBurger ? 'Editar Hambúrguer' : 'Adicionar Novo Hambúrguer'}</DialogTitle>
+            <DialogTitle>{editingPizza ? 'Editar Pizza' : 'Adicionar Nova Pizza'}</DialogTitle>
             <DialogDescription>
-              {editingBurger 
-                ? 'Atualize as informações do hambúrguer e clique em salvar quando terminar.'
-                : 'Preencha os detalhes do novo hambúrguer e clique em adicionar.'}
+              {editingPizza 
+                ? 'Atualize as informações da pizza e clique em salvar quando terminar.'
+                : 'Preencha os detalhes da nova pizza e clique em adicionar.'}
             </DialogDescription>
           </DialogHeader>
           
-          <BurgerForm 
-            burger={editingBurger || undefined}
-            onSubmit={editingBurger ? handleUpdateBurger : handleAddBurger}
+          <PizzaForm 
+            pizza={editingPizza || undefined}
+            onSubmit={editingPizza ? handleUpdatePizza : handleAddPizza}
             onCancel={() => {
-              setEditingBurger(null);
+              setEditingPizza(null);
               setIsFormOpen(false);
             }}
           />
@@ -330,14 +327,14 @@ const AdminMenu = () => {
           <DialogHeader>
             <DialogTitle>Confirmar exclusão</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir este hambúrguer? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta pizza? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={handleDeleteBurger}>
+            <Button variant="destructive" onClick={handleDeletePizza}>
               Excluir
             </Button>
           </DialogFooter>

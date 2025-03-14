@@ -1,10 +1,10 @@
 
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { BurgerItem } from './BurgerCard';
+import { PizzaItem } from './PizzaCard';
 
 interface CartItemProps {
-  item: BurgerItem & { quantity: number };
+  item: PizzaItem & { quantity: number };
 }
 
 const CartItem = ({ item }: CartItemProps) => {

@@ -44,10 +44,10 @@ const Header = () => {
             <Link 
               to="/" 
               className="flex items-center space-x-2"
-              aria-label="Motta Burguer Home"
+              aria-label="Torre de Pisa Home"
             >
               <span className="font-display font-bold text-2xl text-motta-primary">
-                Motta<span className="text-motta-secondary">Burguer</span>
+                Torre<span className="text-motta-secondary">de Pisa</span>
               </span>
             </Link>
           </div>

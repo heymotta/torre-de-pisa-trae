@@ -5,36 +5,36 @@ import { ArrowRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PrimaryButton from '@/components/ui/custom/PrimaryButton';
-import BurgerCard, { BurgerItem } from '@/components/ui/custom/BurgerCard';
+import PizzaCard, { PizzaItem } from '@/components/ui/custom/PizzaCard';
 
 // Mock featured products - in a real app, these would come from an API
-const featuredProducts: BurgerItem[] = [
+const featuredProducts: PizzaItem[] = [
   {
     id: '1',
-    name: 'Classic Motta',
-    description: 'Hambúrguer artesanal, queijo cheddar, alface, tomate, cebola caramelizada e nosso molho especial.',
+    name: 'Margherita',
+    description: 'A clássica pizza italiana com molho de tomate, muçarela fresca e manjericão.',
     price: 29.90,
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer 180g', 'Queijo Cheddar', 'Alface', 'Tomate', 'Cebola Caramelizada', 'Molho Especial'],
+    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Manjericão', 'Azeite de oliva'],
     category: 'tradicional'
   },
   {
     id: '2',
-    name: 'Motta Bacon',
-    description: 'Hambúrguer artesanal, queijo cheddar, bacon crocante, cebola crispy e nosso molho barbecue.',
+    name: 'Pepperoni',
+    description: 'Pizza com generosas fatias de pepperoni e queijo muçarela derretido.',
     price: 32.90,
-    image: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer 180g', 'Queijo Cheddar', 'Bacon Crocante', 'Cebola Crispy', 'Molho Barbecue'],
+    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Pepperoni'],
     category: 'especial'
   },
   {
     id: '3',
-    name: 'Veggie Motta',
-    description: 'Hambúrguer vegetal, queijo vegano, rúcula, tomate, abacate e maionese vegana.',
-    price: 28.90,
-    image: 'https://images.unsplash.com/photo-1550317138-10000687a72b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-    ingredients: ['Hambúrguer Vegetal', 'Queijo Vegano', 'Rúcula', 'Tomate', 'Abacate', 'Maionese Vegana'],
-    category: 'vegano'
+    name: 'Quatro Queijos',
+    description: 'Deliciosa combinação de quatro queijos diferentes: muçarela, parmesão, provolone e gorgonzola.',
+    price: 39.90,
+    image: 'https://images.unsplash.com/photo-1594007654729-407eedc4fe3c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
+    ingredients: ['Molho de tomate', 'Muçarela', 'Parmesão', 'Provolone', 'Gorgonzola'],
+    category: 'especial'
   }
 ];
 
@@ -93,8 +93,8 @@ const Index = () => {
       >
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1550547660-d9450f859349?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80" 
-            alt="Motta Burguer Background" 
+            src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80" 
+            alt="Torre de Pisa Background" 
             className="w-full h-full object-cover object-center brightness-50"
           />
         </div>
@@ -108,14 +108,14 @@ const Index = () => {
         >
           <div className="max-w-2xl">
             <span className="inline-block bg-motta-secondary text-motta-900 font-semibold px-4 py-1 rounded-full mb-4 text-sm">
-              O melhor hambúrguer da cidade
+              A melhor pizzaria da cidade
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-white leading-tight mb-6">
-              Experimente o <span className="text-motta-primary">verdadeiro</span> sabor artesanal
+              Experimente o <span className="text-motta-primary">verdadeiro</span> sabor italiano
             </h1>
             <p className="text-lg sm:text-xl text-white/90 mb-8">
-              Hambúrgueres artesanais preparados com ingredientes selecionados e muito amor. 
-              Uma experiência única em cada mordida.
+              Pizzas artesanais preparadas com ingredientes selecionados e muito amor. 
+              Uma experiência única em cada fatia.
             </p>
             <div className="flex flex-wrap gap-4">
               <PrimaryButton size="lg" as={Link} to="/menu">
@@ -145,17 +145,17 @@ const Index = () => {
             >
               <span className="text-motta-primary font-semibold">NOSSA HISTÓRIA</span>
               <h2 className="text-3xl sm:text-4xl font-display font-bold mt-2 mb-6">
-                Uma paixão por hambúrgueres artesanais desde 2015
+                Uma paixão por pizzas italianas desde 2015
               </h2>
               <p className="text-motta-700 mb-6">
-                Tudo começou com uma simples ideia: criar hambúrgueres que realmente fazem diferença. 
-                Na Motta Burguer, acreditamos que a qualidade dos ingredientes e o cuidado no preparo 
+                Tudo começou com uma simples ideia: criar pizzas que realmente fazem diferença. 
+                Na Torre de Pisa, acreditamos que a qualidade dos ingredientes e o cuidado no preparo 
                 são essenciais para criar uma experiência gastronômica inesquecível.
               </p>
               <p className="text-motta-700 mb-8">
-                Nossos hambúrgueres são feitos diariamente com carnes selecionadas, pães artesanais e 
-                ingredientes frescos. Cada hambúrguer é grelhado no ponto perfeito e montado com carinho 
-                por nossa equipe de especialistas apaixonados por gastronomia.
+                Nossas pizzas são feitas diariamente com ingredientes selecionados, massa artesanal e 
+                molhos preparados na casa. Cada pizza é assada no ponto perfeito em forno a lenha e montada com carinho 
+                por nossa equipe de especialistas apaixonados por gastronomia italiana.
               </p>
               <PrimaryButton as={Link} to="/about">
                 Saiba Mais <ArrowRight className="ml-2 h-4 w-4" />
@@ -171,8 +171,8 @@ const Index = () => {
             >
               <div className="relative z-10 rounded-lg overflow-hidden shadow-xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80" 
-                  alt="Motta Burguer Chef" 
+                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80" 
+                  alt="Torre de Pisa Chef" 
                   className="w-full h-auto"
                 />
               </div>
@@ -192,11 +192,11 @@ const Index = () => {
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-motta-primary font-semibold">DESTAQUES</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold mt-2 mb-6">
-              Nossos Hambúrgueres Mais Pedidos
+              Nossas Pizzas Mais Pedidas
             </h2>
             <p className="text-motta-700">
-              Conheça os hambúrgueres que fazem mais sucesso entre nossos clientes. 
-              Cada um com um sabor único e irresistível.
+              Conheça as pizzas que fazem mais sucesso entre nossos clientes. 
+              Cada uma com um sabor único e irresistível.
             </p>
           </div>
           
@@ -207,9 +207,9 @@ const Index = () => {
                 : 'opacity-0 translate-y-10'
             }`}
           >
-            {featuredProducts.map((burger, index) => (
+            {featuredProducts.map((pizza, index) => (
               <div 
-                key={burger.id}
+                key={pizza.id}
                 className={`transition-all duration-700 delay-${index * 200}`}
                 style={{ 
                   transitionDelay: `${index * 200}ms`,
@@ -217,7 +217,7 @@ const Index = () => {
                   transform: isVisible.featured ? 'translateY(0)' : 'translateY(20px)'
                 }}
               >
-                <BurgerCard burger={burger} />
+                <PizzaCard pizza={pizza} />
               </div>
             ))}
           </div>
@@ -248,8 +248,8 @@ const Index = () => {
               O Que Nossos Clientes Dizem
             </h2>
             <p className="text-motta-400">
-              Veja o que nossos clientes estão falando sobre sua experiência com os 
-              hambúrgueres Motta Burguer.
+              Veja o que nossos clientes estão falando sobre sua experiência com as 
+              pizzas Torre de Pisa.
             </p>
           </div>
           
@@ -282,7 +282,7 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-motta-300">
-                "O melhor hambúrguer que já comi! A carne estava no ponto perfeito e os 
+                "A melhor pizza que já comi! A massa estava no ponto perfeito e os 
                 ingredientes super frescos. O atendimento também foi excelente."
               </p>
             </div>
@@ -309,8 +309,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-motta-300">
-                "Adoro o Motta Bacon! O pão é super macio e a combinação de sabores é incrível. 
-                Sempre peço quando estou com vontade de comer um hambúrguer de verdade."
+                "Adoro a Pizza Quatro Queijos! A combinação de queijos é perfeita e a massa fina e crocante é incrível. 
+                Sempre peço quando tenho visitas em casa."
               </p>
             </div>
             
@@ -336,8 +336,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-motta-300">
-                "O Veggie Motta é sensacional! Como opção vegetariana, é difícil encontrar 
-                hambúrgueres tão saborosos. Recomendo para todos os meus amigos veganos."
+                "A Pizza Vegetariana é sensacional! Como opção vegetariana, é difícil encontrar 
+                pizzas tão saborosas. Recomendo para todos os meus amigos."
               </p>
             </div>
           </div>
@@ -349,10 +349,10 @@ const Index = () => {
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-display font-bold mb-6">
-              Está com fome? Peça o seu Motta Burguer agora!
+              Está com fome? Peça a sua Torre de Pisa agora!
             </h2>
             <p className="text-white/90 text-lg mb-8">
-              Experimente o melhor hambúrguer artesanal da cidade. Entregamos em toda a região.
+              Experimente a melhor pizza italiana da cidade. Entregamos em toda a região.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <PrimaryButton 
