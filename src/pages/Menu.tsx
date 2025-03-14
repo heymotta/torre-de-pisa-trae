@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { toast } from 'sonner';
 import Header from '@/components/layout/Header';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const fetchPizzas = async () => {
   try {
@@ -22,8 +23,11 @@ const fetchPizzas = async () => {
     }
     
     if (!data || data.length === 0) {
+      console.log('No pizzas found or empty data array');
       return [];
     }
+    
+    console.log('Fetched pizzas successfully:', data.length);
     
     // Map database fields to PizzaItem interface
     return data.map(pizza => ({
@@ -45,7 +49,7 @@ const Menu = () => {
   const { data: pizzas, isLoading, error, refetch } = useQuery({
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
-    retry: 2,
+    retry: 3,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
@@ -53,9 +57,10 @@ const Menu = () => {
   const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   
-  // Retry data fetching one time if it fails
+  // Retry data fetching if it fails
   useEffect(() => {
     if (error) {
+      toast.error('Erro ao carregar as pizzas. Tentando novamente...');
       const timer = setTimeout(() => {
         refetch();
       }, 3000);
@@ -65,6 +70,7 @@ const Menu = () => {
   
   useEffect(() => {
     if (pizzas) {
+      console.log('Setting filtered pizzas from:', pizzas.length, 'pizzas');
       let filtered = [...pizzas];
       
       // Apply search filter
@@ -81,26 +87,36 @@ const Menu = () => {
       }
       
       setFilteredPizzas(filtered);
+    } else {
+      console.log('Pizzas data is null or undefined');
     }
   }, [pizzas, searchQuery, activeCategory]);
+  
+  const renderSkeletons = () => {
+    return Array(6).fill(0).map((_, index) => (
+      <div key={index} className="bg-white rounded-lg shadow overflow-hidden">
+        <Skeleton className="h-48 w-full" />
+        <div className="p-4">
+          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-5/6 mb-4" />
+          <Skeleton className="h-10 w-full rounded" />
+        </div>
+      </div>
+    ));
+  };
   
   if (isLoading) {
     return (
       <>
         <Header />
         <div className="container mx-auto py-8 pt-24">
-          <div className="text-center">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
-              <div className="h-10 bg-gray-200 rounded w-full"></div>
-              <div className="h-10 bg-gray-200 rounded w-full"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div key={item} className="h-64 bg-gray-200 rounded-lg"></div>
-                ))}
-              </div>
-            </div>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold">Nosso Cardápio</h1>
             <p className="mt-4">Carregando o menu...</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {renderSkeletons()}
           </div>
         </div>
       </>
@@ -113,6 +129,7 @@ const Menu = () => {
         <Header />
         <div className="container mx-auto py-8 pt-24">
           <div className="text-center text-red-500">
+            <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
             <p>Erro ao carregar o menu. Por favor, tente novamente.</p>
             <p className="text-sm text-gray-600 mt-2">{error.message}</p>
             <button 
@@ -127,12 +144,14 @@ const Menu = () => {
     );
   }
   
+  // Make sure we have pizzas data before rendering
   if (!pizzas || pizzas.length === 0) {
     return (
       <>
         <Header />
         <div className="container mx-auto py-8 pt-24">
           <div className="text-center">
+            <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
             <p>Nenhuma pizza disponível no momento.</p>
           </div>
         </div>
@@ -142,6 +161,9 @@ const Menu = () => {
   
   // Extract unique categories from the pizzas
   const categories = ['all', ...new Set(pizzas.map(pizza => pizza.category))];
+  
+  console.log('Rendering menu with categories:', categories);
+  console.log('Filtered pizzas:', filteredPizzas.length);
 
   return (
     <>
