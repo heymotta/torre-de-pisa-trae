@@ -22,13 +22,6 @@ const fetchPizzas = async () => {
       throw new Error(error.message);
     }
     
-    if (!data || data.length === 0) {
-      console.log('No pizzas found or empty data array');
-      return [];
-    }
-    
-    console.log('Fetched pizzas successfully:', data.length);
-    
     // Map database fields to PizzaItem interface
     return data.map(pizza => ({
       id: pizza.id,
@@ -46,11 +39,9 @@ const fetchPizzas = async () => {
 };
 
 const Menu = () => {
-  const { data: pizzas, isLoading, error, refetch } = useQuery({
+  const { data: pizzas, isLoading, error } = useQuery({
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
-    retry: 5, // Increase retry attempts
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
@@ -58,20 +49,8 @@ const Menu = () => {
   const [filteredPizzas, setFilteredPizzas] = useState<PizzaItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   
-  // Retry data fetching if it fails
-  useEffect(() => {
-    if (error) {
-      toast.error('Erro ao carregar as pizzas. Tentando novamente...');
-      const timer = setTimeout(() => {
-        refetch();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, refetch]);
-  
   useEffect(() => {
     if (pizzas) {
-      console.log('Setting filtered pizzas from:', pizzas.length, 'pizzas');
       let filtered = [...pizzas];
       
       // Apply search filter
@@ -89,7 +68,6 @@ const Menu = () => {
       
       setFilteredPizzas(filtered);
     } else {
-      console.log('Pizzas data is null or undefined');
       setFilteredPizzas([]);
     }
   }, [pizzas, searchQuery, activeCategory]);
@@ -133,10 +111,9 @@ const Menu = () => {
           <div className="text-center text-red-500">
             <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
             <p>Erro ao carregar o menu. Por favor, tente novamente.</p>
-            <p className="text-sm text-gray-600 mt-2">{error.message}</p>
             <button 
-              onClick={() => refetch()} 
               className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
+              onClick={() => window.location.reload()}
             >
               Tentar novamente
             </button>
@@ -146,7 +123,6 @@ const Menu = () => {
     );
   }
   
-  // Make sure we have pizzas data before rendering
   if (!pizzas || pizzas.length === 0) {
     return (
       <>
@@ -163,9 +139,6 @@ const Menu = () => {
   
   // Extract unique categories from the pizzas
   const categories = ['all', ...new Set(pizzas.map(pizza => pizza.category))];
-  
-  console.log('Rendering menu with categories:', categories);
-  console.log('Filtered pizzas:', filteredPizzas.length);
 
   return (
     <>
