@@ -111,8 +111,8 @@ const Index = () => {
               Uma experiência única em cada fatia.
             </p>
             <div className="flex flex-wrap gap-4">
-              <PrimaryButton size="lg" as={Link} to="/about">
-                Conheça Nossa História
+              <PrimaryButton size="lg" as={Link} to="/menu">
+                Cardápio
               </PrimaryButton>
               <PrimaryButton size="lg" variant="outline" className="text-white border-white hover:bg-white/20" as={Link} to="/contact">
                 Entre em Contato
@@ -234,9 +234,9 @@ const Index = () => {
                 size="lg" 
                 className="bg-white text-motta-primary hover:bg-white/90"
                 as={Link}
-                to="/contact"
+                to="/menu"
               >
-                Entre em Contato
+                Ver Cardápio
               </PrimaryButton>
               <PrimaryButton 
                 size="lg" 
