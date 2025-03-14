@@ -8,6 +8,8 @@ export interface User {
   name: string;
   email: string;
   role: 'client' | 'admin';
+  phone?: string;
+  address?: string;
 }
 
 interface AuthContextType {
@@ -54,7 +56,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: '1',
           name: 'Administrador',
           email: 'admin@motta.com',
-          role: 'admin'
+          role: 'admin',
+          phone: '(11) 98765-4321',
+          address: 'Rua da Torre, 145 - Centro, São Paulo - SP'
         };
         setUser(adminUser);
         localStorage.setItem('mottaBurguerUser', JSON.stringify(adminUser));
@@ -68,7 +72,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: '2',
           name: 'Cliente Exemplo',
           email: 'cliente@email.com',
-          role: 'client'
+          role: 'client',
+          phone: '(11) 91234-5678',
+          address: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP'
         };
         setUser(clientUser);
         localStorage.setItem('mottaBurguerUser', JSON.stringify(clientUser));

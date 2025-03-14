@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Cart from "./pages/Cart";
 import Menu from "./pages/Menu";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import OrderTracking from "./pages/OrderTracking";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminOrders from "./pages/admin/Orders";
@@ -36,6 +37,11 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               
               {/* Protected Customer Routes */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
               <Route path="/orders" element={
                 <ProtectedRoute>
                   <OrderTracking />

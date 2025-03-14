@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
@@ -10,8 +10,9 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { totalItems } = useCart();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +25,14 @@ const Header = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
+
+  const handleProfileClick = () => {
+    if (isAdmin) {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/profile');
+    }
+  };
 
   const navLinks = [
     { name: 'Início', path: '/' },
@@ -90,18 +99,16 @@ const Header = () => {
               size="sm"
               variant={user ? "ghost" : "default"}
               className={user ? "" : "bg-motta-primary hover:bg-motta-primary/90"}
-              asChild
+              onClick={user ? handleProfileClick : () => navigate('/login')}
             >
-              <Link to={user ? "/profile" : "/login"}>
-                {user ? (
-                  <div className="flex items-center space-x-2">
-                    <User className="h-5 w-5" />
-                    <span className="font-medium">{user.name?.split(' ')[0]}</span>
-                  </div>
-                ) : (
-                  <span>Entrar</span>
-                )}
-              </Link>
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span className="font-medium">{user.name?.split(' ')[0]}</span>
+                </div>
+              ) : (
+                <span>Entrar</span>
+              )}
             </Button>
           </div>
 
@@ -156,12 +163,13 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
-          <Link
-            to={user ? "/profile" : "/login"}
-            className="block py-2 px-3 rounded-md text-base font-medium bg-motta-50 text-motta-primary mt-2"
+          <Button
+            variant="ghost"
+            className="w-full justify-start py-2 px-3 rounded-md text-base font-medium bg-motta-50 text-motta-primary mt-2"
+            onClick={user ? handleProfileClick : () => navigate('/login')}
           >
-            {user ? `Perfil (${user.name?.split(' ')[0]})` : 'Entrar'}
-          </Link>
+            {user ? `${isAdmin ? 'Painel Admin' : 'Meu Perfil'} (${user.name?.split(' ')[0]})` : 'Entrar'}
+          </Button>
         </div>
       </div>
     </header>
