@@ -1,42 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import PizzaCard, { PizzaItem } from '@/components/ui/custom/PizzaCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { toast } from 'sonner';
+import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 import Header from '@/components/layout/Header';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const fetchPizzas = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('pizzas')
-      .select('*')
-      .eq('disponivel', true);
-      
-    if (error) {
-      console.error('Error fetching pizzas:', error);
-      throw new Error(error.message);
-    }
-    
-    // Map database fields to PizzaItem interface
-    return data.map(pizza => ({
-      id: pizza.id,
-      name: pizza.nome,
-      description: pizza.descricao || '',
-      price: pizza.preco,
-      image: pizza.imagem_url || '/placeholder.svg', // Use placeholder if no image
-      category: pizza.categoria || 'tradicional',
-      ingredients: pizza.ingredientes || []
-    })) as PizzaItem[];
-  } catch (error) {
-    console.error('Failed to fetch pizzas:', error);
-    throw error;
-  }
-};
+import { fetchPizzas } from '@/services/pizzaService';
+import MenuSearch from '@/components/menu/MenuSearch';
+import CategoryTabs from '@/components/menu/CategoryTabs';
+import PizzaGrid from '@/components/menu/PizzaGrid';
+import MenuSkeleton from '@/components/menu/MenuSkeleton';
+import MenuError from '@/components/menu/MenuError';
+import EmptyMenuState from '@/components/menu/EmptyMenuState';
 
 const Menu = () => {
   const { data: pizzas, isLoading, error } = useQuery({
@@ -72,33 +45,11 @@ const Menu = () => {
     }
   }, [pizzas, searchQuery, activeCategory]);
   
-  const renderSkeletons = () => {
-    return Array(6).fill(0).map((_, index) => (
-      <div key={index} className="bg-white rounded-lg shadow overflow-hidden">
-        <Skeleton className="h-48 w-full" />
-        <div className="p-4">
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6 mb-4" />
-          <Skeleton className="h-10 w-full rounded" />
-        </div>
-      </div>
-    ));
-  };
-  
   if (isLoading) {
     return (
       <>
         <Header />
-        <div className="container mx-auto py-8 pt-24">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold">Nosso Cardápio</h1>
-            <p className="mt-4">Carregando o menu...</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {renderSkeletons()}
-          </div>
-        </div>
+        <MenuSkeleton />
       </>
     );
   }
@@ -107,18 +58,7 @@ const Menu = () => {
     return (
       <>
         <Header />
-        <div className="container mx-auto py-8 pt-24">
-          <div className="text-center text-red-500">
-            <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
-            <p>Erro ao carregar o menu. Por favor, tente novamente.</p>
-            <button 
-              className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-600 transition-colors"
-              onClick={() => window.location.reload()}
-            >
-              Tentar novamente
-            </button>
-          </div>
-        </div>
+        <MenuError />
       </>
     );
   }
@@ -127,12 +67,7 @@ const Menu = () => {
     return (
       <>
         <Header />
-        <div className="container mx-auto py-8 pt-24">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-8">Nosso Cardápio</h1>
-            <p>Nenhuma pizza disponível no momento.</p>
-          </div>
-        </div>
+        <EmptyMenuState />
       </>
     );
   }
@@ -146,38 +81,18 @@ const Menu = () => {
       <div className="container mx-auto py-8 pt-24">
         <h1 className="text-3xl font-bold text-center mb-8">Nosso Cardápio</h1>
         
-        <div className="relative mb-6">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Pesquisar pizza..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <MenuSearch 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+        />
         
-        <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-8">
-          <TabsList className="w-full justify-start overflow-auto">
-            {categories.map((category) => (
-              <TabsTrigger key={category} value={category} className="capitalize">
-                {category === 'all' ? 'Todas' : category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <CategoryTabs 
+          categories={categories} 
+          activeCategory={activeCategory} 
+          setActiveCategory={setActiveCategory} 
+        />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPizzas.length > 0 ? (
-            filteredPizzas.map((pizza) => (
-              <PizzaCard key={pizza.id} pizza={pizza} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p>Nenhuma pizza encontrada. Tente outra pesquisa.</p>
-            </div>
-          )}
-        </div>
+        <PizzaGrid pizzas={filteredPizzas} />
       </div>
     </>
   );
