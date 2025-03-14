@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
@@ -36,7 +35,6 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Início', path: '/' },
-    { name: 'Cardápio', path: '/menu' },
     { name: 'Sobre', path: '/about' },
     { name: 'Contato', path: '/contact' },
   ];

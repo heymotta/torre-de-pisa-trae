@@ -9,7 +9,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Cart from "./pages/Cart";
-import Menu from "./pages/Menu";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import OrderTracking from "./pages/OrderTracking";
@@ -33,7 +32,6 @@ const App = () => (
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/menu" element={<Menu />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />

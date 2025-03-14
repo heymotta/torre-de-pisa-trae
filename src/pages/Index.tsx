@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -7,7 +6,6 @@ import Footer from '@/components/layout/Footer';
 import PrimaryButton from '@/components/ui/custom/PrimaryButton';
 import PizzaCard, { PizzaItem } from '@/components/ui/custom/PizzaCard';
 
-// Mock featured products - in a real app, these would come from an API
 const featuredProducts: PizzaItem[] = [
   {
     id: '1',
@@ -51,7 +49,6 @@ const Index = () => {
     featured: useRef<HTMLDivElement>(null),
   };
 
-  // Intersection observer for animations
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     
@@ -74,7 +71,6 @@ const Index = () => {
       }
     });
     
-    // Cleanup observers
     return () => {
       observers.forEach(observer => observer.disconnect());
     };
@@ -84,7 +80,6 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      {/* Hero Section */}
       <section 
         ref={sectionRefs.hero}
         className="pt-20 min-h-[90vh] flex items-center relative overflow-hidden"
@@ -116,18 +111,17 @@ const Index = () => {
               Uma experiência única em cada fatia.
             </p>
             <div className="flex flex-wrap gap-4">
-              <PrimaryButton size="lg" as={Link} to="/menu">
-                Ver Cardápio
-              </PrimaryButton>
-              <PrimaryButton size="lg" variant="outline" className="text-white border-white hover:bg-white/20" as={Link} to="/about">
+              <PrimaryButton size="lg" as={Link} to="/about">
                 Conheça Nossa História
+              </PrimaryButton>
+              <PrimaryButton size="lg" variant="outline" className="text-white border-white hover:bg-white/20" as={Link} to="/contact">
+                Entre em Contato
               </PrimaryButton>
             </div>
           </div>
         </div>
       </section>
       
-      {/* About Section */}
       <section 
         ref={sectionRefs.about}
         className="py-20 bg-motta-50"
@@ -180,7 +174,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Featured Products */}
       <section 
         ref={sectionRefs.featured}
         className="py-20"
@@ -220,14 +213,13 @@ const Index = () => {
           </div>
           
           <div className="text-center mt-12">
-            <PrimaryButton as={Link} to="/menu">
-              Ver Cardápio Completo <ArrowRight className="ml-2 h-4 w-4" />
+            <PrimaryButton as={Link} to="/about">
+              Saiba Mais <ArrowRight className="ml-2 h-4 w-4" />
             </PrimaryButton>
           </div>
         </div>
       </section>
       
-      {/* CTA Section */}
       <section className="py-16 bg-motta-primary text-white">
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
@@ -242,18 +234,18 @@ const Index = () => {
                 size="lg" 
                 className="bg-white text-motta-primary hover:bg-white/90"
                 as={Link}
-                to="/menu"
+                to="/contact"
               >
-                Ver Cardápio
+                Entre em Contato
               </PrimaryButton>
               <PrimaryButton 
                 size="lg" 
                 variant="outline"
                 className="border-white text-white hover:bg-white/20"
                 as={Link}
-                to="/contact"
+                to="/about"
               >
-                Entre em Contato
+                Nossa História
               </PrimaryButton>
             </div>
           </div>
