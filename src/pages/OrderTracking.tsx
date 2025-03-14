@@ -1,216 +1,288 @@
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { fetchUserOrders, Order, getOrderStatus } from '@/services/orderService';
-import { toast } from 'sonner';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Clock, 
+  CheckCircle, 
+  ChefHat, 
+  Truck, 
+  Package, 
+  ArrowLeft 
+} from 'lucide-react';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Package, ShoppingBag } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+interface OrderItem {
+  id: string;
+  pedido_id: string;
+  pizza_id: string;
+  quantidade: number;
+  subtotal: number;
+  pizza: {
+    nome: string;
+    preco: number;
+    imagem_url?: string;
+  };
+}
+
+interface Order {
+  id: string;
+  status: string;
+  total: number;
+  criado_em: string;
+  itens: OrderItem[];
+}
+
+const statusSteps = [
+  { key: 'pendente', label: 'Pendente', icon: Clock },
+  { key: 'em preparo', label: 'Em preparo', icon: ChefHat },
+  { key: 'saiu para entrega', label: 'Saiu para entrega', icon: Truck },
+  { key: 'entregue', label: 'Entregue', icon: CheckCircle }
+];
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+};
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(price);
+};
 
 const OrderTracking = () => {
-  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadOrders = async () => {
-      if (!user) return;
-      
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const fetchOrders = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        setError(null);
-        const userOrders = await fetchUserOrders(user.id);
-        console.log('Orders fetched:', userOrders);
-        setOrders(userOrders);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-        setError('Não foi possível carregar seus pedidos. Tente novamente mais tarde.');
-        toast.error('Erro ao carregar pedidos', {
-          description: 'Não foi possível carregar seus pedidos. Tente novamente.'
-        });
+        // 1. Buscar os pedidos do usuário
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('usuario_id', user?.id)
+          .order('criado_em', { ascending: false });
+
+        if (ordersError) throw ordersError;
+        if (!ordersData) return;
+        
+        // 2. Para cada pedido, buscar os seus itens
+        const ordersWithItems = await Promise.all(
+          ordersData.map(async (order) => {
+            const { data: itemsData, error: itemsError } = await supabase
+              .from('pedido_itens')
+              .select(`
+                *,
+                pizza:pizza_id (
+                  nome,
+                  preco,
+                  imagem_url
+                )
+              `)
+              .eq('pedido_id', order.id);
+
+            if (itemsError) throw itemsError;
+            
+            return {
+              ...order,
+              itens: itemsData || []
+            };
+          })
+        );
+        
+        setOrders(ordersWithItems);
+      } catch (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        toast.error('Erro ao carregar seus pedidos');
       } finally {
         setLoading(false);
       }
     };
 
-    loadOrders();
-  }, [user]);
+    fetchOrders();
+  }, [user, isAuthenticated]);
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "dd 'de' MMMM', às' HH:mm", { locale: ptBR });
-    } catch (e) {
-      console.error('Error formatting date:', e);
-      return dateString;
+  const getStatusIndex = (status: string) => {
+    return statusSteps.findIndex(step => step.key === status);
+  };
+
+  const toggleOrderDetails = (orderId: string) => {
+    if (expandedOrder === orderId) {
+      setExpandedOrder(null);
+    } else {
+      setExpandedOrder(orderId);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 pt-24">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Meus Pedidos</h1>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
-        </div>
-        <Separator className="mb-6" />
-        
-        {Array(3).fill(0).map((_, index) => (
-          <Card key={index} className="mb-6">
-            <CardHeader>
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-4 w-1/4 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full mb-4" />
-              <Skeleton className="h-14 w-full mb-4" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 pt-24">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Meus Pedidos</h1>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
-        </div>
-        <Separator className="mb-6" />
-        
-        <Card className="bg-red-50 border-red-200">
-          <CardContent className="py-6">
-            <div className="text-center">
-              <p className="text-red-500 mb-4">{error}</p>
-              <Button 
-                onClick={() => window.location.reload()}
-                variant="outline"
-              >
-                Tentar novamente
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (orders.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8 pt-24">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Meus Pedidos</h1>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
-        </div>
-        <Separator className="mb-6" />
-        
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center">
-              <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Você ainda não tem pedidos</h3>
-              <p className="text-muted-foreground mb-4">Seus pedidos aparecerão aqui quando você fizer seu primeiro pedido.</p>
-              <Button asChild>
-                <Link to="/menu">Ver cardápio</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-24">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Meus Pedidos</h1>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Link>
-        </Button>
-      </div>
-      <Separator className="mb-6" />
+    <div className="min-h-screen flex flex-col">
+      <Header />
       
-      {orders.map((order) => {
-        const { index: statusIndex, label: statusLabel, color } = getOrderStatus(order.status);
-        const progressValue = statusIndex >= 0 ? (statusIndex / 3) * 100 : 0;
-        
-        return (
-          <Card key={order.id} className="mb-6">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <CardTitle className="text-lg">Pedido #{order.id.substring(0, 8)}</CardTitle>
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${color} text-white`}>
-                  {statusLabel}
+      <main className="flex-grow pt-20 pb-12">
+        <div className="container px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-display font-bold flex items-center">
+              <Package className="mr-2 h-8 w-8" /> Meus Pedidos
+            </h1>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/menu')}
+              className="flex items-center"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" /> Voltar ao Cardápio
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="animate-pulse space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-motta-200 overflow-hidden">
+                  <div className="p-4 border-b border-motta-200 bg-motta-50 flex justify-between">
+                    <div className="h-6 bg-motta-200 rounded w-1/4"></div>
+                    <div className="h-6 bg-motta-200 rounded w-1/5"></div>
+                  </div>
+                  <div className="p-6">
+                    <div className="h-24 bg-motta-200 rounded"></div>
+                  </div>
                 </div>
-              </div>
-              <p className="text-sm text-muted-foreground">Realizado em {formatDate(order.criado_em)}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <h4 className="font-medium mb-2">Progresso do Pedido</h4>
-                {statusIndex >= 0 && statusIndex < 4 ? (
-                  <>
-                    <Progress value={progressValue} className="mb-2" />
-                    <div className="grid grid-cols-4 text-xs">
-                      <div className={statusIndex >= 0 ? "font-medium text-primary" : "text-muted-foreground"}>Pendente</div>
-                      <div className={statusIndex >= 1 ? "font-medium text-primary" : "text-muted-foreground"}>Em preparo</div>
-                      <div className={statusIndex >= 2 ? "font-medium text-primary" : "text-muted-foreground"}>Saiu para entrega</div>
-                      <div className={statusIndex >= 3 ? "font-medium text-primary" : "text-muted-foreground"}>Entregue</div>
+              ))}
+            </div>
+          ) : orders.length > 0 ? (
+            <div className="space-y-6">
+              {orders.map(order => (
+                <div 
+                  key={order.id} 
+                  className="bg-white rounded-xl shadow-sm border border-motta-200 overflow-hidden transition-all duration-300"
+                >
+                  <div 
+                    className="p-4 border-b border-motta-200 bg-motta-50 flex justify-between items-center cursor-pointer"
+                    onClick={() => toggleOrderDetails(order.id)}
+                  >
+                    <div className="flex items-center">
+                      <span className="font-medium">Pedido #{order.id.substring(0, 8)}</span>
+                      <span className="mx-3 text-motta-300">•</span>
+                      <span className="text-sm text-motta-600">{formatDate(order.criado_em)}</span>
                     </div>
-                  </>
-                ) : (
-                  <p className="text-red-500">Pedido cancelado</p>
-                )}
-              </div>
-              
-              <div className="mt-6">
-                <h4 className="font-medium mb-2">Itens do Pedido</h4>
-                <div className="space-y-2">
-                  {order.itens.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="text-center w-6">{item.quantidade}x</div>
-                        <div>{item.pizza?.nome || 'Pizza indisponível'}</div>
+                    <div className="flex items-center">
+                      <span className="font-medium text-motta-primary">{formatPrice(parseFloat(order.total.toString()))}</span>
+                    </div>
+                  </div>
+                  
+                  <div className={`transition-all duration-300 overflow-hidden ${expandedOrder === order.id ? 'max-h-[2000px]' : 'max-h-0'}`}>
+                    <div className="p-6">
+                      <div className="mb-6">
+                        <h3 className="font-medium mb-3">Status do Pedido</h3>
+                        <div className="relative flex justify-between">
+                          {statusSteps.map((step, index) => {
+                            const currentStatus = getStatusIndex(order.status);
+                            const isActive = index <= currentStatus;
+                            const StepIcon = step.icon;
+                            
+                            return (
+                              <div key={step.key} className="flex flex-col items-center z-10">
+                                <div className={`${isActive ? 'bg-motta-primary text-white' : 'bg-motta-100 text-motta-400'} h-10 w-10 rounded-full flex items-center justify-center transition-colors`}>
+                                  <StepIcon className="h-5 w-5" />
+                                </div>
+                                <span className={`text-xs mt-2 text-center max-w-[80px] ${isActive ? 'text-motta-primary font-medium' : 'text-motta-400'}`}>
+                                  {step.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          
+                          {/* Progress line */}
+                          <div className="absolute top-5 left-0 w-full h-0.5 bg-motta-100 -z-10"></div>
+                          <div 
+                            className="absolute top-5 left-0 h-0.5 bg-motta-primary -z-10 transition-all duration-500"
+                            style={{ 
+                              width: `${getStatusIndex(order.status) / (statusSteps.length - 1) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
                       </div>
-                      <div>R$ {((item.subtotal || item.pizza?.preco * item.quantidade) / 100).toFixed(2)}</div>
+                      
+                      <div className="mb-6">
+                        <h3 className="font-medium mb-3">Itens do Pedido</h3>
+                        <div className="space-y-4">
+                          {order.itens.map(item => (
+                            <div key={item.id} className="flex items-center py-2 border-b border-motta-100">
+                              <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
+                                <img 
+                                  src={item.pizza?.imagem_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=100&q=80"} 
+                                  alt={item.pizza?.nome} 
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              
+                              <div className="ml-4 flex-grow">
+                                <h4 className="font-medium">{item.pizza?.nome}</h4>
+                                <p className="text-sm text-motta-600">
+                                  Quantidade: {item.quantidade}
+                                </p>
+                              </div>
+                              
+                              <div className="text-right ml-4">
+                                <p className="font-medium">{formatPrice(parseFloat(item.subtotal.toString()))}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-3 border-t border-motta-200">
+                        <div className="flex justify-between font-bold">
+                          <span>Total</span>
+                          <span className="text-motta-primary">{formatPrice(parseFloat(order.total.toString()))}</span>
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-                <div className="mt-4 text-right font-medium">
-                  Total: R$ {(order.total / 100).toFixed(2)}
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-motta-200 animate-fade-in">
+              <div className="flex justify-center mb-4">
+                <Package className="h-16 w-16 text-motta-400" />
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+              <h2 className="text-2xl font-display font-semibold mb-2">Nenhum pedido encontrado</h2>
+              <p className="text-motta-600 max-w-md mx-auto mb-8">
+                Você ainda não realizou nenhum pedido. Explore nosso cardápio e faça seu primeiro pedido!
+              </p>
+              <Button onClick={() => navigate('/menu')} className="bg-motta-primary hover:bg-motta-primary/90">
+                Ver Cardápio
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };

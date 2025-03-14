@@ -5,6 +5,8 @@ import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 export const fetchPizzas = async (): Promise<PizzaItem[]> => {
   try {
     console.log('Fetching pizzas from Supabase...');
+    
+    // Simplify the query to make sure we're getting results
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
@@ -15,28 +17,30 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       throw new Error(error.message);
     }
     
-    if (!data) {
-      console.log('No data returned from Supabase');
+    if (!data || data.length === 0) {
+      console.log('No pizzas found or empty array returned');
       return [];
     }
     
     console.log('Raw pizza data from Supabase:', data);
     
-    // Map database fields to PizzaItem interface
+    // Improve mapping to handle potential missing fields
     const mappedPizzas = data.map(pizza => ({
       id: pizza.id,
-      name: pizza.nome,
-      description: pizza.descricao || '',
-      price: pizza.preco,
-      image: pizza.imagem_url || '/placeholder.svg', // Use placeholder if no image
+      name: pizza.nome || 'Pizza sem nome',
+      description: pizza.descricao || 'Sem descrição disponível',
+      price: pizza.preco || 0,
+      image: pizza.imagem_url || '/placeholder.svg',
       category: pizza.categoria || 'tradicional',
       ingredients: pizza.ingredientes || []
     }));
     
     console.log('Mapped pizzas:', mappedPizzas);
+    console.log('Number of pizzas fetched:', mappedPizzas.length);
     return mappedPizzas;
   } catch (error) {
     console.error('Failed to fetch pizzas:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent loading state from hanging
+    return [];
   }
 };
