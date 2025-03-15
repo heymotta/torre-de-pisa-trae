@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   const { fetchUserProfile, updateUserProfile } = useUserProfile();
 
@@ -33,33 +34,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const setupUser = async (session: Session | null) => {
       console.log('Setting up user from session:', session);
-      if (session?.user) {
-        try {
-          console.log('Fetching user profile for ID:', session.user.id);
-          const profile = await fetchUserProfile(session.user.id, session.user.email || '');
-          
-          if (profile) {
-            console.log('Profile loaded:', profile);
-            setUser(profile);
-          } else {
-            console.warn('No profile found for user');
+      try {
+        if (session?.user) {
+          try {
+            console.log('Fetching user profile for ID:', session.user.id);
+            const profile = await fetchUserProfile(session.user.id, session.user.email || '');
+            
+            if (profile) {
+              console.log('Profile loaded:', profile);
+              setUser(profile);
+            } else {
+              console.warn('No profile found for user');
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('Error setting up user:', error);
             setUser(null);
           }
-        } catch (error) {
-          console.error('Error setting up user:', error);
+        } else {
+          console.log('No session, clearing user');
           setUser(null);
         }
-      } else {
-        console.log('No session, clearing user');
+      } catch (error) {
+        console.error('Error in setupUser:', error);
         setUser(null);
+      } finally {
+        setLoading(false);
+        setAuthInitialized(true);
       }
-      setLoading(false);
     };
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session);
       setupUser(session);
+    }).catch(error => {
+      console.error('Error getting initial session:', error);
+      setLoading(false);
+      setAuthInitialized(true);
     });
 
     // Listen for auth changes
@@ -89,7 +101,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     } finally {
       console.log('Login process completed, setting loading to false');
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); // Pequeno atraso para evitar problemas de estado
     }
   };
 
@@ -110,7 +124,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     } finally {
       console.log('Signup process completed, setting loading to false');
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); // Pequeno atraso para evitar problemas de estado
     }
   };
 
@@ -127,7 +143,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast.error('Erro ao encerrar sessão: ' + (error.message || 'Tente novamente'));
     } finally {
       console.log('Logout process completed, setting loading to false');
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); // Pequeno atraso para evitar problemas de estado
     }
   };
 
@@ -152,7 +170,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     } finally {
       console.log('Profile update process completed, setting loading to false');
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); // Pequeno atraso para evitar problemas de estado
     }
   };
 
@@ -167,7 +187,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       updateProfile
     }}>
-      {children}
+      {authInitialized ? children : (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-motta-primary rounded-full"></div>
+          <p className="ml-2">Inicializando aplicação...</p>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };
