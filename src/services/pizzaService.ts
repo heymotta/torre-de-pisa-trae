@@ -8,7 +8,9 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
-      .eq('disponivel', true);
+      .eq('disponivel', true)
+      .order('nome')
+      .limit(100);
       
     if (error) {
       console.error('Error fetching pizzas:', error);
@@ -37,6 +39,87 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     return mappedPizzas;
   } catch (error) {
     console.error('Failed to fetch pizzas:', error);
+    throw error;
+  }
+};
+
+// Admin functions for managing pizzas
+export const createPizza = async (pizzaData: Omit<PizzaItem, 'id'>): Promise<PizzaItem> => {
+  try {
+    const { data, error } = await supabase
+      .from('pizzas')
+      .insert({
+        nome: pizzaData.name,
+        descricao: pizzaData.description,
+        preco: pizzaData.price,
+        imagem_url: pizzaData.image,
+        categoria: pizzaData.category,
+        ingredientes: pizzaData.ingredients,
+        disponivel: true
+      })
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error creating pizza:', error);
+      throw new Error(error.message);
+    }
+    
+    return {
+      id: data.id,
+      name: data.nome,
+      description: data.descricao || '',
+      price: data.preco,
+      image: data.imagem_url || '/placeholder.svg',
+      category: data.categoria || 'tradicional',
+      ingredients: data.ingredientes || []
+    };
+  } catch (error) {
+    console.error('Failed to create pizza:', error);
+    throw error;
+  }
+};
+
+export const updatePizza = async (id: string, pizzaData: Partial<Omit<PizzaItem, 'id'>>): Promise<void> => {
+  try {
+    const updateData: any = {};
+    
+    if (pizzaData.name !== undefined) updateData.nome = pizzaData.name;
+    if (pizzaData.description !== undefined) updateData.descricao = pizzaData.description;
+    if (pizzaData.price !== undefined) updateData.preco = pizzaData.price;
+    if (pizzaData.image !== undefined) updateData.imagem_url = pizzaData.image;
+    if (pizzaData.category !== undefined) updateData.categoria = pizzaData.category;
+    if (pizzaData.ingredients !== undefined) updateData.ingredientes = pizzaData.ingredients;
+    
+    const { error } = await supabase
+      .from('pizzas')
+      .update(updateData)
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error updating pizza:', error);
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    console.error('Failed to update pizza:', error);
+    throw error;
+  }
+};
+
+export const deletePizza = async (id: string): Promise<void> => {
+  try {
+    // Instead of hard deleting, we set disponivel to false
+    const { error } = await supabase
+      .from('pizzas')
+      .update({ disponivel: false })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting pizza:', error);
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    console.error('Failed to delete pizza:', error);
     throw error;
   }
 };

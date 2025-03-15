@@ -19,8 +19,9 @@ const Menu = () => {
   const { data: pizzas, isLoading, error, refetch } = useQuery({
     queryKey: ['pizzas'],
     queryFn: fetchPizzas,
-    staleTime: 1000 * 60, // 1 minute
-    retry: 2,
+    staleTime: 0, // No cache - always fetch fresh data
+    retry: 3, // Retry 3 times before showing an error
+    refetchOnWindowFocus: true, // Refresh data when focus returns to window
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,14 +55,12 @@ const Menu = () => {
     }
   }, [pizzas, searchQuery, activeCategory]);
   
-  useEffect(() => {
-    // On component mount, show a loading toast
-    if (isLoading) {
-      toast('Carregando cardápio', {
-        description: 'Aguarde enquanto buscamos as pizzas disponíveis.'
-      });
-    }
-  }, [isLoading]);
+  // Handle manual refresh
+  const handleRefresh = () => {
+    console.log('Manually refreshing menu data');
+    toast.info('Atualizando cardápio...');
+    refetch();
+  };
   
   if (isLoading) {
     console.log('Menu component - loading state');
@@ -81,6 +80,12 @@ const Menu = () => {
         <Header />
         <MenuError>
           <p className="text-sm mt-2">Erro: {(error as Error).message}</p>
+          <button 
+            onClick={handleRefresh}
+            className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-700"
+          >
+            Tentar novamente
+          </button>
         </MenuError>
         <Footer />
       </>
@@ -111,7 +116,15 @@ const Menu = () => {
     <>
       <Header />
       <div className="container mx-auto py-8 pt-24">
-        <h1 className="text-3xl font-bold text-center mb-8">Nosso Cardápio</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Nosso Cardápio</h1>
+          <button 
+            onClick={handleRefresh}
+            className="text-sm text-motta-600 hover:text-motta-primary"
+          >
+            Atualizar
+          </button>
+        </div>
         
         <MenuSearch 
           searchQuery={searchQuery} 

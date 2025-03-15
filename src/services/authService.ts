@@ -5,15 +5,18 @@ import { UserProfile } from '@/types/auth';
 
 export const login = async (email: string, password: string) => {
   try {
+    console.log('Attempting login for:', email);
     const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     
     if (error) {
+      console.error('Login error:', error);
       throw error;
     }
     
+    console.log('Login successful, session:', data.session);
     toast.success('Login realizado com sucesso!');
     return data;
   } catch (error: any) {
@@ -38,6 +41,7 @@ export const signup = async (
   userData: Omit<UserProfile, 'id' | 'email'>
 ) => {
   try {
+    console.log('Attempting signup for:', email);
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
@@ -52,9 +56,11 @@ export const signup = async (
     });
     
     if (error) {
+      console.error('Signup error:', error);
       throw error;
     }
     
+    console.log('Signup successful:', data);
     toast.success('Cadastro realizado com sucesso!');
     return data;
   } catch (error: any) {
@@ -77,16 +83,53 @@ export const signup = async (
 
 export const logout = async () => {
   try {
+    console.log('Attempting logout');
     const { error } = await supabase.auth.signOut();
     
     if (error) {
+      console.error('Logout error:', error);
       throw error;
     }
     
+    console.log('Logout successful');
     toast.info('Sessão encerrada');
     return true;
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
+  }
+};
+
+export const checkSession = async () => {
+  try {
+    console.log('Checking current session');
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Session check error:', error);
+      throw error;
+    }
+    
+    console.log('Current session:', data.session);
+    return data.session;
+  } catch (error) {
+    console.error('Failed to check session:', error);
+    throw error;
+  }
+};
+
+export const isUserAdmin = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    
+    if (error || !data.user) {
+      return false;
+    }
+    
+    console.log('User metadata:', data.user.user_metadata);
+    return data.user.user_metadata?.role === 'admin';
+  } catch (error) {
+    console.error('Failed to check admin status:', error);
+    return false;
   }
 };

@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { UserProfile } from '@/types/auth';
-import { login, signup, logout } from '@/services/authService';
+import { login as loginService, signup as signupService, logout as logoutService } from '@/services/authService';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -29,18 +29,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Set up auth state listener
   useEffect(() => {
+    console.log('Setting up auth state listener');
+    
     const setupUser = async (session: Session | null) => {
+      console.log('Setting up user from session:', session);
       if (session?.user) {
         try {
+          console.log('Fetching user profile for ID:', session.user.id);
           const profile = await fetchUserProfile(session.user.id, session.user.email || '');
           
           if (profile) {
+            console.log('Profile loaded:', profile);
             setUser(profile);
+          } else {
+            console.warn('No profile found for user');
+            setUser(null);
           }
         } catch (error) {
           console.error('Error setting up user:', error);
+          setUser(null);
         }
       } else {
+        console.log('No session, clearing user');
         setUser(null);
       }
       setLoading(false);
@@ -48,32 +58,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session);
       setupUser(session);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('Auth state changed:', event, session);
         await setupUser(session);
       }
     );
 
     return () => {
+      console.log('Cleaning up auth state listener');
       subscription.unsubscribe();
     };
-  }, [navigate, fetchUserProfile]);
+  }, [fetchUserProfile]);
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true);
     try {
-      await login(email, password);
-      navigate('/menu');
+      console.log('handleLogin called with email:', email);
+      await loginService(email, password);
+      // Navigation is handled by the authentication state change
+      console.log('Login service completed successfully');
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Login error in context:', error);
       toast.error('Erro ao fazer login: ' + (error.message || 'Tente novamente'));
       throw error;
     } finally {
+      console.log('Login process completed, setting loading to false');
       setLoading(false);
     }
   };
@@ -85,13 +100,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     setLoading(true);
     try {
-      await signup(email, password, userData);
-      navigate('/menu');
+      console.log('handleSignup called with email:', email);
+      await signupService(email, password, userData);
+      // Navigation is handled by the authentication state change
+      console.log('Signup service completed successfully');
     } catch (error: any) {
-      console.error('Signup error:', error);
+      console.error('Signup error in context:', error);
       toast.error('Erro ao fazer cadastro: ' + (error.message || 'Tente novamente'));
       throw error;
     } finally {
+      console.log('Signup process completed, setting loading to false');
       setLoading(false);
     }
   };
@@ -99,31 +117,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleLogout = async () => {
     setLoading(true);
     try {
-      await logout();
+      console.log('handleLogout called');
+      await logoutService();
+      // Navigation is handled here as the auth state change might not immediately clear everything
       navigate('/login');
+      console.log('Logout service completed successfully, navigating to login');
     } catch (error: any) {
-      console.error('Logout error:', error);
+      console.error('Logout error in context:', error);
       toast.error('Erro ao encerrar sessão: ' + (error.message || 'Tente novamente'));
     } finally {
+      console.log('Logout process completed, setting loading to false');
       setLoading(false);
     }
   };
 
   const updateProfile = async (data: Partial<Omit<UserProfile, 'id' | 'email'>>) => {
-    if (!user) return;
+    if (!user) {
+      console.error('Cannot update profile: No user logged in');
+      return;
+    }
     
     setLoading(true);
     try {
+      console.log('updateProfile called with data:', data);
       await updateUserProfile(user.id, data);
       
       // Update local user state
       setUser(prev => prev ? {...prev, ...data} : null);
+      console.log('Profile updated successfully');
       toast.success('Perfil atualizado com sucesso!');
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast.error('Erro ao atualizar perfil: ' + (error.message || 'Tente novamente'));
       throw error;
     } finally {
+      console.log('Profile update process completed, setting loading to false');
       setLoading(false);
     }
   };
