@@ -7,13 +7,13 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, initialized } = useAuth();
   const location = useLocation();
 
-  console.log('ProtectedRoute - Auth state:', { isAuthenticated, loading });
+  console.log('ProtectedRoute - Auth state:', { isAuthenticated, loading, initialized });
 
   // Show loading state while checking authentication
-  if (loading) {
+  if (!initialized || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-pulse text-center">

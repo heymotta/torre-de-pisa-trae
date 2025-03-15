@@ -7,13 +7,13 @@ interface AdminRouteProps {
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading, initialized } = useAuth();
   const location = useLocation();
 
-  console.log('AdminRoute - Auth state:', { isAuthenticated, isAdmin, loading });
+  console.log('AdminRoute - Auth state:', { isAuthenticated, isAdmin, loading, initialized });
 
   // Show loading state while checking authentication
-  if (loading) {
+  if (!initialized || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-pulse text-center">

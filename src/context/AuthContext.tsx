@@ -16,6 +16,7 @@ interface AuthContextType {
   signup: (email: string, password: string, userData: Omit<UserProfile, 'id' | 'email'>) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
+  initialized: boolean;
   updateProfile: (data: Partial<Omit<UserProfile, 'id' | 'email'>>) => Promise<void>;
 }
 
@@ -24,36 +25,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const navigate = useNavigate();
   const { fetchUserProfile, updateUserProfile } = useUserProfile();
 
   // Set up auth state listener
   useEffect(() => {
     console.log('Setting up auth state listener');
+    let isMounted = true;
     
     const setupUser = async (session: Session | null) => {
       console.log('Setting up user from session:', session);
-      if (session?.user) {
+      if (session?.user && isMounted) {
         try {
           console.log('Fetching user profile for ID:', session.user.id);
           const profile = await fetchUserProfile(session.user.id, session.user.email || '');
           
-          if (profile) {
+          if (profile && isMounted) {
             console.log('Profile loaded:', profile);
             setUser(profile);
-          } else {
+          } else if (isMounted) {
             console.warn('No profile found for user');
             setUser(null);
           }
         } catch (error) {
           console.error('Error setting up user:', error);
-          setUser(null);
+          if (isMounted) setUser(null);
         }
-      } else {
+      } else if (isMounted) {
         console.log('No session, clearing user');
         setUser(null);
       }
-      setLoading(false);
+      
+      if (isMounted) {
+        setLoading(false);
+        setInitialized(true);
+      }
     };
 
     // Get initial session
@@ -72,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       console.log('Cleaning up auth state listener');
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchUserProfile]);
@@ -165,6 +173,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signup: handleSignup,
       logout: handleLogout,
       loading,
+      initialized,
       updateProfile
     }}>
       {children}

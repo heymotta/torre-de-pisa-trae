@@ -22,6 +22,7 @@ const Menu = () => {
     staleTime: 0, // No cache - always fetch fresh data
     retry: 3, // Retry 3 times before showing an error
     refetchOnWindowFocus: true, // Refresh data when focus returns to window
+    refetchInterval: 60000, // Refresh every minute
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +55,11 @@ const Menu = () => {
       setFilteredPizzas([]);
     }
   }, [pizzas, searchQuery, activeCategory]);
+  
+  // Force refresh on component mount
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
   
   // Handle manual refresh
   const handleRefresh = () => {

@@ -5,6 +5,10 @@ import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 export const fetchPizzas = async (): Promise<PizzaItem[]> => {
   try {
     console.log('Fetching pizzas from Supabase...');
+    
+    // Add a timestamp parameter to prevent caching
+    const timestamp = new Date().getTime();
+    
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')

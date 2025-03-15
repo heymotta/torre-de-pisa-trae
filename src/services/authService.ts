@@ -133,3 +133,33 @@ export const isUserAdmin = async (): Promise<boolean> => {
     return false;
   }
 };
+
+// Create an admin user (for testing purposes)
+export const createAdminUser = async (email: string, password: string): Promise<void> => {
+  try {
+    // This function should only be used in development
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('This function is not available in production');
+    }
+
+    const { error, data } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nome: 'Admin',
+          role: 'admin'
+        }
+      }
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    console.log('Admin user created successfully:', data);
+  } catch (error) {
+    console.error('Failed to create admin user:', error);
+    throw error;
+  }
+};
