@@ -111,68 +111,8 @@ export const useUserProfile = () => {
     }
   };
 
-  const fetchAllUsers = async (): Promise<UserProfile[]> => {
-    try {
-      console.log('Fetching all user profiles (admin only)');
-      
-      // Fetch all profiles
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*');
-        
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
-      }
-      
-      if (!profilesData || profilesData.length === 0) {
-        console.log('No profiles found');
-        return [];
-      }
-      
-      // Get all users with their metadata for roles
-      const { data, error: usersError } = await supabase.auth.admin.listUsers();
-      
-      if (usersError) {
-        console.error('Error fetching users:', usersError);
-        throw usersError;
-      }
-      
-      // Check if users is defined before accessing it
-      if (!data || !data.users) {
-        console.error('No users data returned from auth.admin.listUsers');
-        return [];
-      }
-      
-      const users = data.users;
-      
-      // Map profiles with user data
-      const userProfiles: UserProfile[] = profilesData.map(profile => {
-        const matchedUser = users.find(user => user.id === profile.id);
-        const role = matchedUser?.user_metadata?.role || 'client';
-        const email = matchedUser?.email || '';
-        
-        return {
-          id: profile.id,
-          nome: profile.nome,
-          email: email,
-          role: role as 'client' | 'admin',
-          telefone: profile.telefone || '',
-          endereco: profile.endereco || ''
-        };
-      });
-      
-      console.log(`Found ${userProfiles.length} user profiles`);
-      return userProfiles;
-    } catch (error) {
-      console.error('Error in fetchAllUsers:', error);
-      return [];
-    }
-  };
-
   return {
     fetchUserProfile,
-    updateUserProfile,
-    fetchAllUsers
+    updateUserProfile
   };
 };

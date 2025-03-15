@@ -15,7 +15,6 @@ import OrderTracking from "./pages/OrderTracking";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminOrders from "./pages/admin/Orders";
 import AdminMenu from "./pages/admin/Menu";
-import AdminUsers from "./pages/admin/Users";
 import About from "./pages/About";
 import Menu from "./pages/Menu";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -65,11 +64,6 @@ const App = () => (
               <Route path="/admin/menu" element={
                 <AdminRoute>
                   <AdminMenu />
-                </AdminRoute>
-              } />
-              <Route path="/admin/users" element={
-                <AdminRoute>
-                  <AdminUsers />
                 </AdminRoute>
               } />
               

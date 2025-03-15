@@ -133,26 +133,3 @@ export const isUserAdmin = async (): Promise<boolean> => {
     return false;
   }
 };
-
-export const updateUserRole = async (userId: string, role: 'client' | 'admin') => {
-  try {
-    console.log(`Updating user ${userId} role to ${role}`);
-    
-    // Use Supabase admin functions to update user
-    const { error } = await supabase.auth.admin.updateUserById(
-      userId,
-      { user_metadata: { role } }
-    );
-    
-    if (error) {
-      console.error('Error updating user role:', error);
-      throw error;
-    }
-    
-    console.log('User role updated successfully');
-    return true;
-  } catch (error) {
-    console.error('Failed to update user role:', error);
-    throw error;
-  }
-};
