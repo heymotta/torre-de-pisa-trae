@@ -131,15 +131,23 @@ export const useUserProfile = () => {
       }
       
       // Get all users with their metadata for roles
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      const { data, error: usersError } = await supabase.auth.admin.listUsers();
       
       if (usersError) {
         console.error('Error fetching users:', usersError);
         throw usersError;
       }
       
+      // Check if users is defined before accessing it
+      if (!data || !data.users) {
+        console.error('No users data returned from auth.admin.listUsers');
+        return [];
+      }
+      
+      const users = data.users;
+      
       // Map profiles with user data
-      const userProfiles = profilesData.map(profile => {
+      const userProfiles: UserProfile[] = profilesData.map(profile => {
         const matchedUser = users.find(user => user.id === profile.id);
         const role = matchedUser?.user_metadata?.role || 'client';
         const email = matchedUser?.email || '';
