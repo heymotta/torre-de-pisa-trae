@@ -5,15 +5,12 @@ import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 export const fetchPizzas = async (): Promise<PizzaItem[]> => {
   try {
     console.log('Fetching pizzas from Supabase...');
-    // Usando uma timestamp para forçar o recarregamento e quebrar o cache
-    const timestamp = new Date().getTime();
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
       .eq('disponivel', true)
       .order('nome')
-      .limit(100)
-      .headers({ 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'x-timestamp': timestamp.toString() });
+      .limit(100);
       
     if (error) {
       console.error('Error fetching pizzas:', error);

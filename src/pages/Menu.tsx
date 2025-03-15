@@ -22,7 +22,6 @@ const Menu = () => {
     staleTime: 0, // No cache - always fetch fresh data
     retry: 3, // Retry 3 times before showing an error
     refetchOnWindowFocus: true, // Refresh data when focus returns to window
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,12 +61,6 @@ const Menu = () => {
     toast.info('Atualizando cardápio...');
     refetch();
   };
-  
-  // Forçar refetch na montagem do componente
-  useEffect(() => {
-    console.log('Menu component mounted, forcing initial refetch');
-    refetch();
-  }, [refetch]);
   
   if (isLoading) {
     console.log('Menu component - loading state');

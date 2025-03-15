@@ -30,28 +30,13 @@ const Login = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pageReady, setPageReady] = useState(false);
   
   const from = (location.state as any)?.from || '/menu';
-  
-  useEffect(() => {
-    // Set page as ready after a small delay
-    const timer = setTimeout(() => {
-      setPageReady(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
   
   // Redirect if already authenticated - use an effect to ensure this runs client-side
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('User is authenticated, redirecting to:', from);
-      const timer = setTimeout(() => {
-        navigate(from, { replace: true });
-      }, 100);
-      
-      return () => clearTimeout(timer);
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
   
@@ -75,35 +60,25 @@ const Login = () => {
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (isSubmitting || loading) {
-      console.log('Already submitting, ignoring request');
-      return;
-    }
+    if (isSubmitting) return;
     
     setIsSubmitting(true);
     
     try {
-      console.log('Attempting login with email:', email);
       await login(email, password);
       // Navigation is handled by the authentication state change
-      console.log('Login successful, redirection will happen via auth state change');
     } catch (error) {
       console.error('Login error:', error);
       // Don't show toast here as it's handled in the auth service
     } finally {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 500);
+      setIsSubmitting(false);
     }
   };
   
   const handleSignupSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (isSubmitting || loading) {
-      console.log('Already submitting, ignoring request');
-      return;
-    }
+    if (isSubmitting) return;
     
     if (!nome.trim()) {
       toast.error('O nome é obrigatório');
@@ -122,7 +97,6 @@ const Login = () => {
     
     setIsSubmitting(true);
     try {
-      console.log('Attempting signup with email:', signupEmail);
       await signup(signupEmail, signupPassword, {
         nome,
         telefone,
@@ -130,26 +104,13 @@ const Login = () => {
         role: 'client'
       });
       // Navigation is handled by the authentication state change
-      console.log('Signup successful, redirection will happen via auth state change');
     } catch (error) {
       console.error('Signup error:', error);
       // Don't show toast here as it's handled in the auth service
     } finally {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 500);
+      setIsSubmitting(false);
     }
   };
-  
-  // If still initializing auth, show a loading state
-  if (!pageReady) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-motta-primary rounded-full"></div>
-        <p className="mt-4">Carregando...</p>
-      </div>
-    );
-  }
   
   // If already authenticated, show a temporary message and redirect
   if (isAuthenticated) {
@@ -205,7 +166,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      disabled={isSubmitting || loading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -230,14 +191,14 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-motta-500 hover:text-motta-700"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -289,7 +250,7 @@ const Login = () => {
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
                       required
-                      disabled={isSubmitting || loading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -304,7 +265,7 @@ const Login = () => {
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       required
-                      disabled={isSubmitting || loading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -319,7 +280,7 @@ const Login = () => {
                         placeholder="(99) 99999-9999"
                         value={telefone}
                         onChange={(e) => setTelefone(e.target.value)}
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       />
                     </div>
                     
@@ -333,7 +294,7 @@ const Login = () => {
                         placeholder="Seu endereço"
                         value={endereco}
                         onChange={(e) => setEndereco(e.target.value)}
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -351,14 +312,14 @@ const Login = () => {
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
                         minLength={6}
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-motta-500 hover:text-motta-700"
                         onClick={() => setShowSignupPassword(!showSignupPassword)}
                         aria-label={showSignupPassword ? "Esconder senha" : "Mostrar senha"}
-                        disabled={isSubmitting || loading}
+                        disabled={isSubmitting}
                       >
                         {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -377,7 +338,7 @@ const Login = () => {
                       onChange={(e) => setSignupPasswordConfirm(e.target.value)}
                       required
                       minLength={6}
-                      disabled={isSubmitting || loading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   

@@ -18,7 +18,6 @@ const OrderTracking = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -38,14 +37,11 @@ const OrderTracking = () => {
         });
       } finally {
         setLoading(false);
-        setInitialized(true);
       }
     };
 
-    if (user && !initialized) {
-      loadOrders();
-    }
-  }, [user, initialized]);
+    loadOrders();
+  }, [user]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -56,8 +52,7 @@ const OrderTracking = () => {
     }
   };
 
-  // Don't render anything until we've done our first load attempt
-  if (!initialized && loading) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="flex items-center justify-between mb-6">
