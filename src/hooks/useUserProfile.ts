@@ -111,8 +111,60 @@ export const useUserProfile = () => {
     }
   };
 
+  const fetchAllUsers = async (): Promise<UserProfile[]> => {
+    try {
+      console.log('Fetching all user profiles (admin only)');
+      
+      // Fetch all profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+        
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+      
+      if (!profilesData || profilesData.length === 0) {
+        console.log('No profiles found');
+        return [];
+      }
+      
+      // Get all users with their metadata for roles
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        throw usersError;
+      }
+      
+      // Map profiles with user data
+      const userProfiles = profilesData.map(profile => {
+        const matchedUser = users.find(user => user.id === profile.id);
+        const role = matchedUser?.user_metadata?.role || 'client';
+        const email = matchedUser?.email || '';
+        
+        return {
+          id: profile.id,
+          nome: profile.nome,
+          email: email,
+          role: role as 'client' | 'admin',
+          telefone: profile.telefone || '',
+          endereco: profile.endereco || ''
+        };
+      });
+      
+      console.log(`Found ${userProfiles.length} user profiles`);
+      return userProfiles;
+    } catch (error) {
+      console.error('Error in fetchAllUsers:', error);
+      return [];
+    }
+  };
+
   return {
     fetchUserProfile,
-    updateUserProfile
+    updateUserProfile,
+    fetchAllUsers
   };
 };
