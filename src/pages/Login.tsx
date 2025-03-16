@@ -25,7 +25,7 @@ const Login = () => {
   const [endereco, setEndereco] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   
-  const { login, signup, isAuthenticated, loading } = useAuth();
+  const { login, signup, isAuthenticated, loading, initialized } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("login");
@@ -33,12 +33,13 @@ const Login = () => {
   
   const from = (location.state as any)?.from || '/menu';
   
-  // Redirect if already authenticated - use an effect to ensure this runs client-side
+  // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (initialized && isAuthenticated) {
+      console.log('User is authenticated, redirecting to:', from);
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, navigate, from, initialized]);
   
   // Reset submission state after 15 seconds (in case of hanging requests)
   useEffect(() => {
@@ -111,6 +112,18 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // If loading and not yet initialized, show loading indicator
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-motta-primary border-r-transparent mb-4"></div>
+          <p className="text-motta-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
   
   // If already authenticated, show a temporary message and redirect
   if (isAuthenticated) {

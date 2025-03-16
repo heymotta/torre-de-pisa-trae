@@ -64,10 +64,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session);
-      setupUser(session);
-    });
+    const initializeAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        console.log('Initial session check:', data.session);
+        await setupUser(data.session);
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        if (isMounted) {
+          setLoading(false);
+          setInitialized(true);
+          setUser(null);
+        }
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

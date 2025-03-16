@@ -14,7 +14,12 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
       .select('*')
       .eq('disponivel', true)
       .order('nome')
-      .limit(100);
+      .limit(100)
+      .headers({
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      });
       
     if (error) {
       console.error('Error fetching pizzas:', error);
