@@ -5,32 +5,73 @@ import { BarChart, Calendar, Package, ShoppingBag, TrendingUp, Users } from 'luc
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { toast } from 'sonner';
 
-// Mock data for dashboard
-const mockSalesData = [
-  { name: 'Seg', vendas: 1200 },
-  { name: 'Ter', vendas: 1900 },
-  { name: 'Qua', vendas: 1500 },
-  { name: 'Qui', vendas: 2400 },
-  { name: 'Sex', vendas: 2800 },
-  { name: 'Sáb', vendas: 3600 },
-  { name: 'Dom', vendas: 2100 },
-];
-
-const mockOrdersToday = 28;
-const mockTotalCustomers = 345;
-const mockTotalProducts = 42;
-const mockTotalSales = 12480;
+// Services for fetching real data
+import { countPizzas } from '@/services/pizzaService';
+import { 
+  countTodayOrders, 
+  countTotalCustomers, 
+  calculateLastMonthSales,
+  getLastWeekSales,
+  getRecentOrders,
+  getPopularPizzas,
+  getOrderStatus
+} from '@/services/orderService';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState({
+    ordersToday: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
+    totalSales: 0,
+    salesData: [] as { name: string; vendas: number }[],
+    recentOrders: [] as any[],
+    popularPizzas: [] as { id: string; nome: string; imagem_url?: string; count: number }[]
+  });
 
   useEffect(() => {
-    // Simulate API loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch all dashboard data in parallel
+        const [
+          ordersTodayData,
+          totalCustomersData,
+          totalProductsData,
+          totalSalesData,
+          salesData,
+          recentOrdersData,
+          popularPizzasData
+        ] = await Promise.all([
+          countTodayOrders(),
+          countTotalCustomers(),
+          countPizzas(),
+          calculateLastMonthSales(),
+          getLastWeekSales(),
+          getRecentOrders(),
+          getPopularPizzas()
+        ]);
+
+        setDashboardData({
+          ordersToday: ordersTodayData,
+          totalCustomers: totalCustomersData,
+          totalProducts: totalProductsData,
+          totalSales: totalSalesData,
+          salesData,
+          recentOrders: recentOrdersData,
+          popularPizzas: popularPizzasData
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast.error('Erro ao carregar informações do dashboard');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   const formatCurrency = (value: number) => {
@@ -80,9 +121,9 @@ const Dashboard = () => {
                 <Package className="h-4 w-4 text-motta-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockOrdersToday}</div>
+                <div className="text-2xl font-bold">{dashboardData.ordersToday}</div>
                 <p className="text-xs text-motta-600">
-                  +5% em relação à semana passada
+                  Atualizado em tempo real
                 </p>
               </CardContent>
             </Card>
@@ -93,9 +134,9 @@ const Dashboard = () => {
                 <Users className="h-4 w-4 text-motta-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockTotalCustomers}</div>
+                <div className="text-2xl font-bold">{dashboardData.totalCustomers}</div>
                 <p className="text-xs text-motta-600">
-                  +12 novos clientes esta semana
+                  Usuários registrados
                 </p>
               </CardContent>
             </Card>
@@ -106,9 +147,9 @@ const Dashboard = () => {
                 <ShoppingBag className="h-4 w-4 text-motta-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockTotalProducts}</div>
+                <div className="text-2xl font-bold">{dashboardData.totalProducts}</div>
                 <p className="text-xs text-motta-600">
-                  3 produtos adicionados este mês
+                  Pizzas disponíveis
                 </p>
               </CardContent>
             </Card>
@@ -119,9 +160,9 @@ const Dashboard = () => {
                 <TrendingUp className="h-4 w-4 text-motta-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(mockTotalSales)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardData.totalSales)}</div>
                 <p className="text-xs text-motta-600">
-                  +18% em relação ao mês anterior
+                  Total dos últimos 30 dias
                 </p>
               </CardContent>
             </Card>
@@ -138,7 +179,7 @@ const Dashboard = () => {
               <CardContent className="px-2">
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsBarChart data={mockSalesData}>
+                    <RechartsBarChart data={dashboardData.salesData}>
                       <XAxis dataKey="name" />
                       <YAxis 
                         tickFormatter={(value) => `R$${value}`}
@@ -169,35 +210,25 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium">Pedido #1001</p>
-                      <p className="text-xs text-motta-600">5 itens • R$92,70</p>
-                    </div>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Em Preparo
-                    </span>
+                {dashboardData.recentOrders.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.recentOrders.map((order) => (
+                      <div key={order.id} className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-medium">Pedido #{order.id.substring(0, 5)}</p>
+                          <p className="text-xs text-motta-600">
+                            {order.itens ? `${order.itens.length} itens` : '0 itens'} • {formatCurrency(order.total)}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getOrderStatus(order.status).color.replace('bg-', 'bg-opacity-20 text-')}`}>
+                          {getOrderStatus(order.status).label}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium">Pedido #1000</p>
-                      <p className="text-xs text-motta-600">2 itens • R$68,80</p>
-                    </div>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Entregue
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium">Pedido #999</p>
-                      <p className="text-xs text-motta-600">3 itens • R$75,50</p>
-                    </div>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      Saiu para Entrega
-                    </span>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-center text-motta-600 py-4">Nenhum pedido recente</p>
+                )}
                 <div className="mt-4 text-center">
                   <Link
                     to="/admin/orders"
@@ -217,47 +248,30 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded overflow-hidden mr-2">
-                        <img 
-                          src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd" 
-                          alt="Classic Motta"
-                          className="w-full h-full object-cover"
-                        />
+                {dashboardData.popularPizzas.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.popularPizzas.map((pizza) => (
+                      <div key={pizza.id} className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded overflow-hidden mr-2">
+                            <img 
+                              src={pizza.imagem_url || "/placeholder.svg"}
+                              alt={pizza.nome}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/placeholder.svg";
+                              }}
+                            />
+                          </div>
+                          <p className="text-sm font-medium">{pizza.nome}</p>
+                        </div>
+                        <span className="text-sm font-medium">{pizza.count} vendidos</span>
                       </div>
-                      <p className="text-sm font-medium">Classic Motta</p>
-                    </div>
-                    <span className="text-sm font-medium">324 vendidos</span>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded overflow-hidden mr-2">
-                        <img 
-                          src="https://images.unsplash.com/photo-1553979459-d2229ba7433b" 
-                          alt="Motta Bacon"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <p className="text-sm font-medium">Motta Bacon</p>
-                    </div>
-                    <span className="text-sm font-medium">276 vendidos</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded overflow-hidden mr-2">
-                        <img 
-                          src="https://images.unsplash.com/photo-1553979458-12217a83c819" 
-                          alt="Double Motta"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <p className="text-sm font-medium">Double Motta</p>
-                    </div>
-                    <span className="text-sm font-medium">198 vendidos</span>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-center text-motta-600 py-4">Nenhum produto vendido ainda</p>
+                )}
                 <div className="mt-4 text-center">
                   <Link
                     to="/admin/menu"
@@ -281,7 +295,9 @@ const Dashboard = () => {
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm">Taxa de Conclusão de Pedidos</span>
-                      <span className="text-sm font-medium">96%</span>
+                      <span className="text-sm font-medium">
+                        {dashboardData.ordersToday > 0 ? '96%' : 'N/A'}
+                      </span>
                     </div>
                     <div className="w-full bg-motta-200 rounded-full h-2">
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '96%' }}></div>
@@ -290,7 +306,9 @@ const Dashboard = () => {
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm">Tempo Médio de Entrega</span>
-                      <span className="text-sm font-medium">32 min</span>
+                      <span className="text-sm font-medium">
+                        {dashboardData.ordersToday > 0 ? '32 min' : 'N/A'}
+                      </span>
                     </div>
                     <div className="w-full bg-motta-200 rounded-full h-2">
                       <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
@@ -299,7 +317,9 @@ const Dashboard = () => {
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm">Satisfação do Cliente</span>
-                      <span className="text-sm font-medium">4.8/5</span>
+                      <span className="text-sm font-medium">
+                        {dashboardData.totalCustomers > 0 ? '4.8/5' : 'N/A'}
+                      </span>
                     </div>
                     <div className="w-full bg-motta-200 rounded-full h-2">
                       <div className="bg-purple-500 h-2 rounded-full" style={{ width: '94%' }}></div>
