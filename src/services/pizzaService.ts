@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 
@@ -43,6 +44,26 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     return mappedPizzas;
   } catch (error) {
     console.error('Failed to fetch pizzas:', error);
+    throw error;
+  }
+};
+
+// Count total available pizzas
+export const countPizzas = async (): Promise<number> => {
+  try {
+    const { count, error } = await supabase
+      .from('pizzas')
+      .select('*', { count: 'exact', head: true })
+      .eq('disponivel', true);
+      
+    if (error) {
+      console.error('Error counting pizzas:', error);
+      throw new Error(error.message);
+    }
+    
+    return count || 0;
+  } catch (error) {
+    console.error('Failed to count pizzas:', error);
     throw error;
   }
 };
