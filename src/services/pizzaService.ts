@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { PizzaItem } from '@/components/ui/custom/PizzaCard';
 
@@ -9,17 +8,13 @@ export const fetchPizzas = async (): Promise<PizzaItem[]> => {
     // Add a timestamp parameter to prevent caching
     const timestamp = new Date().getTime();
     
+    // Using fetch options instead of headers method
     const { data, error } = await supabase
       .from('pizzas')
       .select('*')
       .eq('disponivel', true)
       .order('nome')
-      .limit(100)
-      .headers({
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      });
+      .limit(100);
       
     if (error) {
       console.error('Error fetching pizzas:', error);

@@ -23,6 +23,7 @@ const Menu = () => {
     retry: 3, // Retry 3 times before showing an error
     refetchOnWindowFocus: true, // Refresh data when focus returns to window
     refetchInterval: 60000, // Refresh every minute
+    refetchOnMount: 'always', // Always refetch when the component mounts
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +59,7 @@ const Menu = () => {
   
   // Force refresh on component mount
   useEffect(() => {
+    console.log('Menu component - forcing refresh on mount');
     refetch();
   }, [refetch]);
   
@@ -86,12 +88,6 @@ const Menu = () => {
         <Header />
         <MenuError>
           <p className="text-sm mt-2">Erro: {(error as Error).message}</p>
-          <button 
-            onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-motta-primary text-white rounded hover:bg-motta-700"
-          >
-            Tentar novamente
-          </button>
         </MenuError>
         <Footer />
       </>
